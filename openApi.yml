@@ -282,7 +282,6 @@ components:
     Match:
       type: object
       required:
-        - id
         - date
         - team1_player1
         - team2_player1
