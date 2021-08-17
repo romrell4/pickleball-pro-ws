@@ -147,6 +147,12 @@ paths:
       operationId: 'createMatch'
       tags:
         - match
+      requestBody:
+        description: 'The new match to post'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Match'
       responses:
         '200':
           description: 'New match that was created'
