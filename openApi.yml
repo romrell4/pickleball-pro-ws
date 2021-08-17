@@ -2,23 +2,13 @@ openapi: 3.0.0
 info:
   version: 0.1.0
   title: pickleball-pro
-servers:
-  # TODO: add URL
-  - url: 'https://petstore.swagger.io/v1'
 paths:
-  # TODO: Figure this endpoint out
   /user:
     post:
       summary: 'Create User'
       operationId: 'createUser'
       tags:
         - user
-      requestBody:
-        description: 'Create User'
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
       responses:
         '200':
           description: 'Newly created user'
@@ -250,7 +240,6 @@ components:
         - first_name
         - last_name
         - image_url
-        - dominant_hand
         - notes
       properties:
         id:
