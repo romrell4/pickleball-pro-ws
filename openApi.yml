@@ -110,13 +110,12 @@ paths:
           description: Player ID
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
       operationId: 'deletePlayer'
       tags:
         - player
       responses:
-        '200':
+        '204':
           description: 'Player was deleted successfully'
         '401':
           $ref: '#/components/responses/NotAuthorized'
@@ -170,13 +169,12 @@ paths:
           description: Player ID
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
       operationId: 'deleteMatch'
       tags:
         - match
       responses:
-        '200':
+        '204':
           description: 'The match was deleted successfully'
         '401':
           $ref: '#/components/responses/NotAuthorized'
