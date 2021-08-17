@@ -266,6 +266,13 @@ components:
         properties:
           schema:
             $ref: '#/components/schemas/Player'
+    Matches:
+      type: array
+      items:
+        type: object
+        properties:
+          schema:
+            $ref: '#/components/schemas/Match'
     Match:
       type: object
       required:
