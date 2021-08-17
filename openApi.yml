@@ -29,7 +29,7 @@ paths:
       summary: 'get a list of players'
       operationId: 'getPlayers'
       tags:
-        - players
+        - player
       responses:
         '200':
           description: 'Returns a list of players'
@@ -45,7 +45,7 @@ paths:
       summary: 'Create a new player'
       operationId: 'createPlayer'
       tags:
-        - players
+        - player
       requestBody:
         description: 'The player to be created'
         content:
