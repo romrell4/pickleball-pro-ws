@@ -6,8 +6,10 @@ from firebase_client import FirebaseClient
 from da import Dao
 from domain import ServiceException
 
+
 def handle(event, _):
     return Handler.get_instance().handle(event)
+
 
 class Handler:
     instance = None
@@ -52,11 +54,13 @@ class Handler:
         # Lower case all the keys, then look for token
         return {k.lower(): v for k, v in event["headers"].items()}.get("x-firebase-token")
 
-def format_response(body = None, status_code = 200):
+
+def format_response(body=None, status_code=200):
     return {
         "statusCode": status_code,
         "body": json.dumps(body, default=default_serialize) if body is not None else None
     }
+
 
 def default_serialize(x):
     if isinstance(x, datetime.datetime):

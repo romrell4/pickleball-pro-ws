@@ -2,6 +2,7 @@ from domain import *
 import pymysql
 import os
 
+
 class Dao:
     def __init__(self):
         try:
@@ -13,12 +14,10 @@ class Dao:
     ### DB ACCESS FUNCTIONS ###
 
     def get_user(self, user_id: str) -> User:
-        # TODO: Fix SQL
-        return self.get_one(User, "select ID, FIRST_NAME, LAST_NAME, IMAGE_URL from users where ID = %s", user_id)
+        return self.get_one(User, "select id, first_name, last_name, image_url from users where ID = %s", user_id)
 
     def create_user(self, user):
-        # TODO: Fix SQL
-        self.insert("insert into users (ID, FIRST_NAME, LAST_NAME, IMAGE_URL) values (%s, %s, %s, %s)", user.user_id, user.first_name, user.last_name, user.image_url)
+        self.insert("insert into users (id, first_name, last_name, image_url) values (%s, %s, %s, %s)", user.user_id, user.first_name, user.last_name, user.image_url)
 
     ### UTILS ###
 
