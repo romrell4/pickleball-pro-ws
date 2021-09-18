@@ -9,12 +9,14 @@ import unittest
 
 import da_test
 import bl_test
+import handler_test
 
 loader = unittest.TestLoader()
 suite = unittest.TestSuite()
 
 suite.addTests(loader.loadTestsFromTestCase(da_test.Test))
 suite.addTests(loader.loadTestsFromTestCase(bl_test.Test))
+suite.addTests(loader.loadTestsFromTestCase(handler_test.Test))
 
 result = unittest.TextTestRunner(verbosity=3).run(suite)
 exit(0 if result.wasSuccessful() else 1)

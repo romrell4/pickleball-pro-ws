@@ -226,12 +226,12 @@ components:
     User:
       type: object
       required:
-        - id
+        - user_id
         - first_name
         - last_name
         - image_url
       properties:
-        id:
+        user_id:
           type: string
         first_name:
           type: string
@@ -240,12 +240,13 @@ components:
     Player:
       type: object
       required:
+        - player_id
         - first_name
         - last_name
         - image_url
         - notes
       properties:
-        id:
+        player_id:
           type: string
         first_name:
           type: string
@@ -282,12 +283,13 @@ components:
     Match:
       type: object
       required:
+        - match_id
         - date
         - team1_player1
         - team2_player1
         - scores
       properties:
-        id:
+        match_id:
           type: string
         date:
           type: string

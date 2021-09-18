@@ -1,8 +1,6 @@
-from da import Dao
-from domain import User
 import uuid
 
-from firebase_client import FirebaseClient
+from domain import User
 
 
 class Manager:
