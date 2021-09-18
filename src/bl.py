@@ -16,7 +16,7 @@ class Manager:
             firebase_user = self.firebase_client.get_firebase_user(token)
             # TODO: Use this log to determine what fields can come from the JWT
             print(firebase_user)
-            self.user = self.dao.get_user(firebase_user["user_id"])
+            self.user = self.dao.get_user_by_firebase_id(firebase_user["user_id"])
             if self.user is None:
                 first_name, last_names = firebase_user["name"].split(" ", 1)
                 self.user = User(firebase_user["user_id"], first_name, last_names, firebase_user.get("picture"))

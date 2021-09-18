@@ -14,10 +14,13 @@ class Dao:
     ### DB ACCESS FUNCTIONS ###
 
     def get_user(self, user_id: str) -> User:
-        return self.get_one(User, "select id, first_name, last_name, image_url from users where ID = %s", user_id)
+        return self.get_one(User, "select id, firebase_id, first_name, last_name, image_url from users where id = %s", user_id)
+
+    def get_user_by_firebase_id(self, firebase_id: str) -> Optional[User]:
+        return self.get_one(User, "select id, firebase_id, first_name, last_name, image_url from users where firebase_id = %s", firebase_id)
 
     def create_user(self, user):
-        self.insert("insert into users (id, first_name, last_name, image_url) values (%s, %s, %s, %s)", user.user_id, user.first_name, user.last_name, user.image_url)
+        self.insert("insert into users (id, firebase_id, first_name, last_name, image_url) values (%s, %s, %s, %s, %s)", user.user_id, user.firebase_id, user.first_name, user.last_name, user.image_url)
 
     ### UTILS ###
 

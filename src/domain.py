@@ -1,9 +1,42 @@
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Optional
+
+
+@dataclass
 class User:
-    def __init__(self, user_id: str, first_name: str, last_name: str, image_url: str):
-        self.user_id, self.first_name, self.last_name, self.image_url = user_id, first_name, last_name, image_url
+    user_id: str
+    firebase_id: str
+    first_name: str
+    last_name: str
+    image_url: str
 
 
-# TODO: Add more objects
+@dataclass
+class Match:
+    match_id: str
+    user_id: str
+    date: datetime
+    team1_player1_id: str
+    team1_player2_id: Optional[str]
+    team2_player1_id: str
+    team2_player2_id: Optional[str]
+    scores: str
+
+
+@dataclass
+class Player:
+    player_id: str
+    owner_user_id: str
+    image_url: str
+    first_name: str
+    last_name: str
+    dominant_hand: str
+    notes: str
+    phone_number: str
+    email_address: str
+    level: float
+
 
 #### Non-DB Objects ####
 
