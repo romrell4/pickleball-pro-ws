@@ -2,8 +2,8 @@ import os
 import unittest
 
 from test import properties
-from src.da import Dao
-from src.domain import *
+from da import Dao
+from domain import *
 
 
 class Test(unittest.TestCase):
