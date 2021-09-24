@@ -1,6 +1,6 @@
 import uuid
 
-from domain import User
+from domain import User, ServiceException
 
 
 class Manager:
@@ -23,3 +23,12 @@ class Manager:
                 self.dao.create_user(self.user)
         except (KeyError, ValueError):
             self.user = None
+
+    def get_players(self):
+        self.require_auth()
+
+        return self.dao.get_players(self.user.user_id)
+
+    def require_auth(self):
+        if self.user is None:
+            raise ServiceException("Unable to authenticate", 401)

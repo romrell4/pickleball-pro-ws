@@ -1,5 +1,6 @@
 import os
 import unittest
+from typing import List
 
 from test import properties
 from da import Dao
@@ -20,11 +21,14 @@ class Test(unittest.TestCase):
 
     def setUp(self) -> None:
         try:
-            self.dao.insert("""INSERT INTO users (id, firebase_id, first_name, last_name, image_url) VALUES 
+            self.dao.insert("""insert into users (id, firebase_id, first_name, last_name, image_url) values 
                 ('TEST1', 'fb1', 'Tester', 'One', 'test1.jpg'),
                 ('TEST2', 'fb2', 'Tester', 'Two', 'test2.jpg'),
                 ('TEST3', 'fb3', 'Tester', 'Three', 'test3.jpg'),
                 ('TEST4', 'fb4', 'Tester', 'Four', 'test4.jpg')
+            """)
+            self.dao.insert("""insert into players (id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level) values 
+                ('1', 'TEST1', 'image.jpg', 'first', 'last', 'LEFT', 'notes', 'phone', 'email', 5.2)
             """)
         except:
             self.tearDown()
@@ -32,7 +36,7 @@ class Test(unittest.TestCase):
 
     def tearDown(self) -> None:
         # These will cascade in order to delete the other ones
-        self.dao.execute("DELETE FROM users where id in ('__TEST', 'TEST1', 'TEST2', 'TEST3', 'TEST4')")
+        self.dao.execute("delete from users where id in ('__TEST', 'TEST1', 'TEST2', 'TEST3', 'TEST4')")
 
     def test_get_user(self):
         # Test non-existent user
@@ -60,10 +64,17 @@ class Test(unittest.TestCase):
 
     def test_create_user(self):
         self.dao.create_user(User("__TEST", "fbid", "First", "Last", "test.jpg"))
-        user: User = self.dao.get_one(User, "SELECT id, firebase_id, first_name, last_name, image_url FROM users where ID = '__TEST'")
+        user: User = self.dao.get_one(User, "select id, firebase_id, first_name, last_name, image_url from users where ID = '__TEST'")
         self.assertIsNotNone(user)
         self.assertEqual("__TEST", user.user_id)
         self.assertEqual("fbid", user.firebase_id)
         self.assertEqual("First", user.first_name)
         self.assertEqual("Last", user.last_name)
         self.assertEqual("test.jpg", user.image_url)
+
+    def test_get_players(self):
+        players = self.dao.get_players("TEST0")
+        self.assertEqual(0, len(players))
+
+        players = self.dao.get_players("TEST1")
+        self.assertEqual(1, len(players))

@@ -1,5 +1,7 @@
 import unittest
 from datetime import timedelta, date
+from typing import Callable
+from unittest.mock import patch
 
 from bl import Manager
 from domain import *
@@ -38,6 +40,23 @@ class Test(unittest.TestCase):
         self.assertIsNotNone(self.manager.user)
         self.assertFalse(self.manager.dao.created_user)
 
+    def test_get_players(self):
+        self.assert_requires_auth(lambda: self.manager.get_players())
+
+        self.manager.user = Test.test_user
+        expected_players = [Player("player_id", "owner_user_id", "image_url", "first_name", "last_name", "dominant_hand", "notes", "phone_number", "email", 5.0)]
+        with patch.object(self.manager.dao, "get_players", return_value=expected_players):
+            players = self.manager.get_players()
+            self.assertEqual(expected_players, players)
+
+    def assert_requires_auth(self, fun: Callable):
+        self.manager.user = None
+        with self.assertRaises(ServiceException) as e:
+            fun()
+        self.assertEqual(401, e.exception.status_code)
+        self.assertEqual("Unable to authenticate", e.exception.error_message)
+
+
 
 class MockFirebaseClient:
     valid_user = True
@@ -72,3 +91,5 @@ class MockDao:
         self.user_database[user.user_id] = user
         self.created_user = True
         return user
+
+    def get_players(self): pass

@@ -34,7 +34,7 @@ class Player:
     dominant_hand: str
     notes: str
     phone_number: str
-    email_address: str
+    email: str
     level: float
 
 

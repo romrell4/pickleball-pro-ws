@@ -41,6 +41,8 @@ class Handler:
 
             if resource == "/users" and method == "POST":
                 response_body = self.manager.user
+            elif resource == "/players" and method == "GET":
+                response_body = self.manager.get_players()
             # TODO: Implement other endpoints
             else:
                 raise ServiceException("Invalid path: '{} {}'".format(resource, method))

@@ -1,3 +1,5 @@
+from typing import List
+
 from domain import *
 import pymysql
 import os
@@ -19,8 +21,11 @@ class Dao:
     def get_user_by_firebase_id(self, firebase_id: str) -> Optional[User]:
         return self.get_one(User, "select id, firebase_id, first_name, last_name, image_url from users where firebase_id = %s", firebase_id)
 
-    def create_user(self, user):
+    def create_user(self, user: User):
         self.insert("insert into users (id, firebase_id, first_name, last_name, image_url) values (%s, %s, %s, %s, %s)", user.user_id, user.firebase_id, user.first_name, user.last_name, user.image_url)
+
+    def get_players(self, owner_user_id: str) -> List[Player]:
+        return self.get_list(Player, "select id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level from players where owner_user_id = %s", owner_user_id)
 
     ### UTILS ###
 
