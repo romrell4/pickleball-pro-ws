@@ -19,26 +19,29 @@ class Test(unittest.TestCase):
         self.assertIsNone(self.manager.user)
 
         # Test invalid token response
-        self.manager.firebase_client.valid_user = False
-        self.manager.validate_token("")
-        self.assertIsNone(self.manager.user)
+        with patch.object(self.manager.firebase_client, "get_firebase_user", return_value={}) as mock:
+            self.manager.validate_token("token")
+            self.assertIsNone(self.manager.user)
+        mock.assert_called_once_with("token")
 
         # Test a new user
-        self.manager.firebase_client.valid_user = True
-        self.manager.validate_token("")
-        self.assertIsNotNone(self.manager.user)
-        self.assertTrue(self.manager.dao.created_user)
-        self.assertIsNotNone(self.manager.user.user_id)
-        self.assertEqual("NEW_FB_ID", self.manager.user.firebase_id)
-        self.assertEqual("FIRST", self.manager.user.first_name)
-        self.assertEqual("MIDDLE LAST", self.manager.user.last_name)
-        self.assertEqual("PICTURE", self.manager.user.image_url)
+        with patch.object(self.manager.firebase_client, "get_firebase_user", return_value={"user_id": "NEW_FB_ID", "name": "FIRST MIDDLE LAST", "email": "EMAIL", "picture": "PICTURE"}):
+            with patch.object(self.manager.dao, "get_user_by_firebase_id", return_value=None):
+                self.manager.validate_token("")
+                self.assertIsNotNone(self.manager.user)
+                self.assertIsNotNone(self.manager.user.user_id)
+                self.assertEqual("NEW_FB_ID", self.manager.user.firebase_id)
+                self.assertEqual("FIRST", self.manager.user.first_name)
+                self.assertEqual("MIDDLE LAST", self.manager.user.last_name)
+                self.assertEqual("PICTURE", self.manager.user.image_url)
 
         # Test a saved user
-        self.manager.firebase_client.valid_user = True
-        self.manager.validate_token("")
-        self.assertIsNotNone(self.manager.user)
-        self.assertFalse(self.manager.dao.created_user)
+        with patch.object(self.manager.firebase_client, "get_firebase_user", return_value={"user_id": "NEW_FB_ID", "name": "FIRST MIDDLE LAST", "email": "EMAIL", "picture": "PICTURE"}):
+            with patch.object(self.manager.dao, "get_user_by_firebase_id", return_value=None):
+                with patch.object(self.manager.dao, "create_user", return_value=None) as create_user_mock:
+                    self.manager.validate_token("")
+                    self.assertIsNotNone(self.manager.user)
+                create_user_mock.assert_called_once()
 
     def test_get_players(self):
         self.assert_requires_auth(lambda: self.manager.get_players())
@@ -57,39 +60,16 @@ class Test(unittest.TestCase):
         self.assertEqual("Unable to authenticate", e.exception.error_message)
 
 
-
 class MockFirebaseClient:
-    valid_user = True
-
     def get_firebase_user(self, token):
-        if self.valid_user:
-            return {"user_id": "NEW_FB_ID", "name": "FIRST MIDDLE LAST", "email": "EMAIL", "picture": "PICTURE"}
-        else:
-            return {}
-
-
-def create_date(day_offset):
-    return date.today() + timedelta(days=day_offset)
+        pass
 
 
 class MockDao:
-    user_database = {
-        Test.test_user.user_id: Test.test_user,
-        "TEST1": User("TEST1", "", "", "", ""),
-        "BAD_USER": User("BAD_USER", "", "", "", "")
-    }
-    created_user = False
+    def get_user(self, user_id: str) -> User: pass
 
-    def get_user(self, user_id: str) -> User:
-        return self.user_database.get(user_id)
+    def get_user_by_firebase_id(self, firebase_id: str) -> Optional[User]: pass
 
-    def get_user_by_firebase_id(self, firebase_id: str) -> Optional[User]:
-        self.created_user = False
-        return next(iter([user for (user_id, user) in self.user_database.items() if user.firebase_id == firebase_id]), None)
-
-    def create_user(self, user):
-        self.user_database[user.user_id] = user
-        self.created_user = True
-        return user
+    def create_user(self, user): pass
 
     def get_players(self): pass
