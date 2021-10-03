@@ -1,16 +1,32 @@
 import uuid
+from typing import List, Optional
 
-from domain import User, ServiceException
+from da import Dao
+from domain import User, ServiceException, Player
+from firebase_client import FirebaseClient
 
 
 class Manager:
-    def __init__(self, firebase_client, dao):
+    firebase_client = None
+    user = None
+    dao = None
+
+    def validate_token(self, token: str) -> None: pass
+
+    def get_players(self) -> List[Player]: pass
+
+    def create_player(self, player: Player) -> Player: pass
+
+
+class ManagerImpl(Manager):
+    def __init__(self, firebase_client: FirebaseClient, dao: Dao):
         self.firebase_client = firebase_client
         self.dao = dao
         self.user = None
 
-    def validate_token(self, token):
-        if token is None: return
+    def validate_token(self, token: Optional[str]):
+        if token is None:
+            return
 
         try:
             firebase_user = self.firebase_client.get_firebase_user(token)
@@ -28,6 +44,15 @@ class Manager:
         self.require_auth()
 
         return self.dao.get_players(self.user.user_id)
+
+    def create_player(self, player: Player) -> Player:
+        self.require_auth()
+
+        if self.user.user_id != player.owner_user_id:
+            raise ServiceException("Cannot create a player owned by a different user", 403)
+
+        player.player_id = str(uuid.uuid4())
+        return self.dao.create_player(player)
 
     def require_auth(self):
         if self.user is None:

@@ -6,6 +6,18 @@ import os
 
 
 class Dao:
+    def get_user(self, user_id: str) -> User: pass
+
+    def get_user_by_firebase_id(self, firebase_id: str) -> Optional[User]: pass
+
+    def create_user(self, user: User): pass
+
+    def get_players(self, owner_user_id: str) -> List[Player]: pass
+
+    def create_player(self, player: Player) -> Player: pass
+
+
+class DaoImpl(Dao):
     def __init__(self):
         try:
             self.conn = pymysql.connect(host=os.environ["DB_HOST"], user=(os.environ["DB_USERNAME"]), passwd=(os.environ["DB_PASSWORD"]), db=(os.environ["DB_DATABASE_NAME"]), autocommit=True)
@@ -26,6 +38,11 @@ class Dao:
 
     def get_players(self, owner_user_id: str) -> List[Player]:
         return self.get_list(Player, "select id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level from players where owner_user_id = %s", owner_user_id)
+
+    def create_player(self, player: Player) -> Player:
+        self.insert("insert into players (id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", player.player_id,
+                    player.owner_user_id, player.image_url, player.first_name, player.last_name, player.dominant_hand.name, player.notes, player.phone_number, player.email, player.level)
+        return self.get_one(Player, "select id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level from players where id = %s", player.player_id)
 
     ### UTILS ###
 

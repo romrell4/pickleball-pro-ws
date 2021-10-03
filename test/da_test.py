@@ -1,14 +1,13 @@
 import os
 import unittest
-from typing import List
 
 from test import properties
-from da import Dao
+from da import DaoImpl
 from domain import *
 
 
 class Test(unittest.TestCase):
-    dao: Dao
+    dao: DaoImpl
 
     @classmethod
     def setUpClass(cls):
@@ -17,7 +16,7 @@ class Test(unittest.TestCase):
         os.environ["DB_PASSWORD"] = properties.db_password
         os.environ["DB_DATABASE_NAME"] = properties.db_database_name
 
-        cls.dao = Dao()
+        cls.dao = DaoImpl()
 
     def setUp(self) -> None:
         try:
@@ -78,3 +77,17 @@ class Test(unittest.TestCase):
 
         players = self.dao.get_players("TEST1")
         self.assertEqual(1, len(players))
+
+    def test_create_player(self):
+        player = self.dao.create_player(Player("0", "TEST1", "image_url", "first_name", "last_name", DominantHand.RIGHT, "notes", "phone_number", "email", 5.0))
+        self.assertIsNotNone(player)
+        self.assertEqual("0", player.player_id)
+        self.assertEqual("TEST1", player.owner_user_id)
+        self.assertEqual("image_url", player.image_url)
+        self.assertEqual("first_name", player.first_name)
+        self.assertEqual("last_name", player.last_name)
+        self.assertEqual(DominantHand.RIGHT, player.dominant_hand)
+        self.assertEqual("notes", player.notes)
+        self.assertEqual("phone_number", player.phone_number)
+        self.assertEqual("email", player.email)
+        self.assertEqual(5.0, player.level)

@@ -1,10 +1,10 @@
 import datetime
 import json
 
-from bl import Manager
+from bl import ManagerImpl
 from firebase_client import FirebaseClient
-from da import Dao
-from domain import ServiceException
+from da import DaoImpl
+from domain import ServiceException, Player, Codable
 
 
 def handle(event, _):
@@ -17,7 +17,7 @@ class Handler:
     @staticmethod
     def get_instance():
         if Handler.instance is None:
-            Handler.instance = Handler(Manager(FirebaseClient(), Dao()))
+            Handler.instance = Handler(ManagerImpl(FirebaseClient(), DaoImpl()))
         return Handler.instance
 
     def __init__(self, manager):
@@ -43,6 +43,8 @@ class Handler:
                 response_body = self.manager.user
             elif resource == "/players" and method == "GET":
                 response_body = self.manager.get_players()
+            elif resource == "/players" and method == "POST":
+                response_body = self.manager.create_player(Player.from_dict(body))
             # TODO: Implement other endpoints
             else:
                 raise ServiceException("Invalid path: '{} {}'".format(resource, method))
@@ -69,5 +71,7 @@ def default_serialize(x):
         return x.isoformat() + "Z"
     elif isinstance(x, datetime.date):
         return x.isoformat()
+    elif isinstance(x, Codable):
+        return x.to_dict()
     else:
         return x.__dict__

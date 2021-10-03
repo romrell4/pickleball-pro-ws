@@ -1,17 +1,19 @@
 import unittest
-from datetime import timedelta, date
 from typing import Callable
 from unittest.mock import patch
 
-from bl import Manager
+from bl import ManagerImpl
+from da import Dao
 from domain import *
+from firebase_client import FirebaseClient
 
 
 class Test(unittest.TestCase):
     test_user = User("USER1", "FB_ID", "User", "One", "user.jpg")
+    test_player = Player("player_id", "owner_user_id", "image_url", "first_name", "last_name", DominantHand.RIGHT, "notes", "phone_number", "email", 5.0)
 
     def setUp(self):
-        self.manager = Manager(MockFirebaseClient(), MockDao())
+        self.manager = ManagerImpl(FirebaseClient(), Dao())
 
     def test_validate_token(self):
         # Test without a token (unauthenticated request)
@@ -46,11 +48,24 @@ class Test(unittest.TestCase):
     def test_get_players(self):
         self.assert_requires_auth(lambda: self.manager.get_players())
 
-        self.manager.user = Test.test_user
-        expected_players = [Player("player_id", "owner_user_id", "image_url", "first_name", "last_name", "dominant_hand", "notes", "phone_number", "email", 5.0)]
-        with patch.object(self.manager.dao, "get_players", return_value=expected_players):
+        with patch.object(self.manager.dao, "get_players", return_value=[Test.test_player]):
             players = self.manager.get_players()
-            self.assertEqual(expected_players, players)
+            self.assertEqual([Test.test_player], players)
+
+    def test_create_player(self):
+        self.assert_requires_auth(lambda: self.manager.create_player(Test.test_player))
+
+        # Test creating a user for someone else
+        with self.assertRaises(ServiceException) as e:
+            self.manager.create_player(Test.test_player)
+        self.assertEqual(403, e.exception.status_code)
+        self.assertEqual("Cannot create a player owned by a different user", e.exception.error_message)
+
+        test_player = Test.test_player
+        test_player.owner_user_id = Test.test_user.user_id
+        with patch.object(self.manager.dao, "create_player", return_value=Test.test_player):
+            player = self.manager.create_player(Test.test_player)
+            self.assertEqual(Test.test_player, player)
 
     def assert_requires_auth(self, fun: Callable):
         self.manager.user = None
@@ -58,18 +73,4 @@ class Test(unittest.TestCase):
             fun()
         self.assertEqual(401, e.exception.status_code)
         self.assertEqual("Unable to authenticate", e.exception.error_message)
-
-
-class MockFirebaseClient:
-    def get_firebase_user(self, token):
-        pass
-
-
-class MockDao:
-    def get_user(self, user_id: str) -> User: pass
-
-    def get_user_by_firebase_id(self, firebase_id: str) -> Optional[User]: pass
-
-    def create_user(self, user): pass
-
-    def get_players(self): pass
+        self.manager.user = Test.test_user
