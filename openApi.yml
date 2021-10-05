@@ -22,7 +22,7 @@ paths:
           $ref: '#/components/responses/NotAuthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-        default:
+        '500':
           $ref: '#/components/responses/DefaultError'
   /players:
     get:
@@ -39,7 +39,7 @@ paths:
                 $ref: '#/components/schemas/Players'
         '401':
           $ref: '#/components/responses/NotAuthorized'
-        default:
+        '500':
           $ref: '#/components/responses/DefaultError'
     post:
       summary: 'Create a new player'
@@ -63,7 +63,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/NotAuthorized'
-        default:
+        '500':
           $ref: '#/components/responses/DefaultError'
   /players/{id}:
     put:
@@ -100,7 +100,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-        default:
+        '500':
           $ref: '#/components/responses/DefaultError'
     delete:
       summary: "Delete a player by id"
@@ -123,7 +123,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-        default:
+        '500':
           $ref: '#/components/responses/DefaultError'
   /matches:
     get:
@@ -140,7 +140,7 @@ paths:
                 $ref: '#/components/schemas/Matches'
         '401':
           $ref: '#/components/responses/NotAuthorized'
-        default:
+        '500':
           $ref: '#/components/responses/DefaultError'
     post:
       summary: 'Create a new match'
@@ -164,7 +164,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/NotAuthorized'
-        default:
+        '500':
           $ref: '#/components/responses/DefaultError'
   /matches/{id}:
     delete:
@@ -188,7 +188,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-        default:
+        '500':
           $ref: '#/components/responses/DefaultError'
 components:
   responses:
@@ -371,9 +371,3 @@ components:
           format: int32
         message:
           type: string
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-security:
-  - bearerAuth: [ ]
