@@ -1,8 +1,8 @@
 import uuid
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from da import Dao
-from domain import User, ServiceException, Player
+from domain import User, ServiceException, Player, Match
 from firebase_client import FirebaseClient
 
 
@@ -16,6 +16,16 @@ class Manager:
     def get_players(self) -> List[Player]: pass
 
     def create_player(self, player: Player) -> Player: pass
+
+    def update_player(self, player_id: str, player: Player) -> Player: pass
+
+    def delete_player(self, player_id: str) -> Dict: pass
+
+    def get_matches(self) -> List[Match]: pass
+
+    def create_match(self) -> Match: pass
+
+    def delete_match(self, match_id: str) -> Dict: pass
 
 
 class ManagerImpl(Manager):

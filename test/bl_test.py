@@ -6,12 +6,10 @@ from bl import ManagerImpl
 from da import Dao
 from domain import *
 from firebase_client import FirebaseClient
+from test import fixtures
 
 
 class Test(unittest.TestCase):
-    test_user = User("USER1", "FB_ID", "User", "One", "user.jpg")
-    test_player = Player("player_id", "owner_user_id", "image_url", "first_name", "last_name", DominantHand.RIGHT, "notes", "phone_number", "email", 5.0)
-
     def setUp(self):
         self.manager = ManagerImpl(FirebaseClient(), Dao())
 
@@ -44,28 +42,37 @@ class Test(unittest.TestCase):
                     self.manager.validate_token("")
                     self.assertIsNotNone(self.manager.user)
                 create_user_mock.assert_called_once()
+                user = create_user_mock.call_args.args[0]
+                self.assertEqual("NEW_FB_ID", user.firebase_id)
+                self.assertEqual("FIRST", user.first_name)
+                self.assertEqual("MIDDLE LAST", user.last_name)
+                self.assertEqual("PICTURE", user.image_url)
 
     def test_get_players(self):
         self.assert_requires_auth(lambda: self.manager.get_players())
 
-        with patch.object(self.manager.dao, "get_players", return_value=[Test.test_player]):
+        with patch.object(self.manager.dao, "get_players", return_value=[fixtures.player()]):
             players = self.manager.get_players()
-            self.assertEqual([Test.test_player], players)
+            self.assertEqual([fixtures.player()], players)
 
     def test_create_player(self):
-        self.assert_requires_auth(lambda: self.manager.create_player(Test.test_player))
+        self.assert_requires_auth(lambda: self.manager.create_player(fixtures.player()))
 
         # Test creating a user for someone else
         with self.assertRaises(ServiceException) as e:
-            self.manager.create_player(Test.test_player)
+            self.manager.create_player(fixtures.player())
         self.assertEqual(403, e.exception.status_code)
         self.assertEqual("Cannot create a player owned by a different user", e.exception.error_message)
 
-        test_player = Test.test_player
-        test_player.owner_user_id = Test.test_user.user_id
-        with patch.object(self.manager.dao, "create_player", return_value=Test.test_player):
-            player = self.manager.create_player(Test.test_player)
-            self.assertEqual(Test.test_player, player)
+        test_player = fixtures.player()
+        test_player.owner_user_id = fixtures.user().user_id
+        with patch.object(self.manager.dao, "create_player", return_value=fixtures.player()) as create_player_mock:
+            player = self.manager.create_player(test_player)
+            self.assertEqual(fixtures.player(), player)
+
+        create_player_mock.assert_called_once()
+        player = create_player_mock.call_args.args[0]
+        self.assertNotEqual(fixtures.player().player_id, player.player_id)
 
     def assert_requires_auth(self, fun: Callable):
         self.manager.user = None
@@ -73,4 +80,4 @@ class Test(unittest.TestCase):
             fun()
         self.assertEqual(401, e.exception.status_code)
         self.assertEqual("Unable to authenticate", e.exception.error_message)
-        self.manager.user = Test.test_user
+        self.manager.user = fixtures.user()

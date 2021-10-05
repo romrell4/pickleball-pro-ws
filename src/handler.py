@@ -4,7 +4,7 @@ import json
 from bl import ManagerImpl
 from firebase_client import FirebaseClient
 from da import DaoImpl
-from domain import ServiceException, Player, Codable
+from domain import ServiceException, Player, Codable, Match
 
 
 def handle(event, _):
@@ -45,7 +45,16 @@ class Handler:
                 response_body = self.manager.get_players()
             elif resource == "/players" and method == "POST":
                 response_body = self.manager.create_player(Player.from_dict(body))
-            # TODO: Implement other endpoints
+            elif resource == "/players/{id}" and method == "PUT":
+                response_body = self.manager.update_player(path_params["id"], Player.from_dict(body))
+            elif resource == "/players/{id}" and method == "DELETE":
+                response_body = self.manager.delete_player(path_params["id"])
+            elif resource == "/matches" and method == "GET":
+                response_body = self.manager.get_matches()
+            elif resource == "/matches" and method == "POST":
+                response_body = self.manager.create_match(Match.from_dict(body))
+            elif resource == "/matches/{id}" and method == "DELETE":
+                response_body = self.manager.delete_match(path_params["id"])
             else:
                 raise ServiceException("Invalid path: '{} {}'".format(resource, method))
 

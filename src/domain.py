@@ -32,6 +32,16 @@ class Match(Codable):
     team2_player1_id: str
     team2_player2_id: Optional[str]
     scores: str
+    # TODO: Determine how to break down the scores into domain objects...
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]):
+        # TODO: Read from nested structure
+        super().from_dict(d)
+
+    def to_dict(self) -> Dict[str, Any]:
+        # TODO: Turn into nested structure
+        return super().to_dict()
 
 
 class DominantHand(str, Enum):

@@ -1,10 +1,12 @@
-import unittest
 import json
+import unittest
+from typing import Dict
 from unittest.mock import patch
 
 import handler
 from bl import Manager
-from domain import *
+from domain import User, Player, Match
+from test import fixtures
 
 
 class Test(unittest.TestCase):
@@ -25,21 +27,10 @@ class Test(unittest.TestCase):
         self.assertEqual("hello.jpg", user["image_url"])
 
     def test_get_players(self):
-        with patch.object(self.handler.manager, "get_players", return_value=[Player("player_id", "owner_user_id", "image_url", "first_name", "last_name", DominantHand.LEFT, "notes", "phone_number", "email", 5.0)]):
+        with patch.object(self.handler.manager, "get_players", return_value=[fixtures.player()]):
             response = self.handler.handle(create_event("/players"))
             self.assertEqual(200, response["statusCode"])
-            players = json.loads(response["body"])
-            player = players[0]
-            self.assertEqual("player_id", player["player_id"])
-            self.assertEqual("owner_user_id", player["owner_user_id"])
-            self.assertEqual("image_url", player["image_url"])
-            self.assertEqual("first_name", player["first_name"])
-            self.assertEqual("last_name", player["last_name"])
-            self.assertEqual("LEFT", player["dominant_hand"])
-            self.assertEqual("notes", player["notes"])
-            self.assertEqual("phone_number", player["phone_number"])
-            self.assertEqual("email", player["email"])
-            self.assertEqual(5.0, player["level"])
+            self.assert_player_json(fixtures.player(), json.loads(response["body"])[0])
 
     def test_create_player(self):
         response = self.handler.handle(create_event("/players", method="POST", body="{}"))
@@ -47,25 +38,63 @@ class Test(unittest.TestCase):
         error = json.loads(response["body"])
         self.assertEqual("Missing required key 'owner_user_id' in request body", error["error"])
 
-        with patch.object(self.handler.manager, "create_player", return_value=Player("player_id", "owner_user_id", "image_url", "first_name", "last_name", DominantHand.RIGHT, "notes", "phone_number", "email", 5.0)) as create_player:
-            response = self.handler.handle(create_event("/players", method="POST", body=json.dumps(Player("", "owner", "image", "first", "last", DominantHand.RIGHT).__dict__)))
+        with patch.object(self.handler.manager, "create_player", return_value=fixtures.player()) as create_player_mock:
+            response = self.handler.handle(create_event("/players", method="POST", body=json.dumps(fixtures.player().to_dict())))
             self.assertEqual(200, response["statusCode"])
-            player = json.loads(response["body"])
-            self.assertEqual("player_id", player["player_id"])
-            self.assertEqual("owner_user_id", player["owner_user_id"])
-            self.assertEqual("image_url", player["image_url"])
-            self.assertEqual("first_name", player["first_name"])
-            self.assertEqual("last_name", player["last_name"])
-            self.assertEqual("RIGHT", player["dominant_hand"])
-            self.assertEqual("notes", player["notes"])
-            self.assertEqual("phone_number", player["phone_number"])
-            self.assertEqual("email", player["email"])
-            self.assertEqual(5.0, player["level"])
+            self.assert_player_json(fixtures.player(), json.loads(response["body"]))
 
-        player = create_player.call_args.args[0]
+        player = create_player_mock.call_args.args[0]
         self.assertIsInstance(player, Player)
-        self.assertIsNotNone(player.player_id)
-        self.assertIsNot("", player.player_id)
+        self.assertEqual(fixtures.player(), player)
+
+    def test_update_player(self):
+        response = self.handler.handle(create_event("/players/{id}", method="PUT", path_params={"id": "ID"}, body="{}"))
+        self.assertEqual(400, response["statusCode"])
+        error = json.loads(response["body"])
+        self.assertEqual("Missing required key 'owner_user_id' in request body", error["error"])
+
+        with patch.object(self.handler.manager, "update_player", return_value=fixtures.player()) as update_player_mock:
+            response = self.handler.handle(create_event("/players/{id}", method="PUT", path_params={"id": "ID"}, body=json.dumps(fixtures.player().to_dict())))
+            self.assertEqual(200, response["statusCode"])
+            self.assert_player_json(fixtures.player(), json.loads(response["body"]))
+
+        player_id, player = update_player_mock.call_args.args[0:2]
+        self.assertEqual("ID", player_id)
+        self.assertIsInstance(player, Player)
+        self.assertEqual(fixtures.player(), player)
+
+    def test_delete_player(self):
+        with patch.object(self.handler.manager, "delete_player", return_value={}) as delete_player_mock:
+            response = self.handler.handle(create_event("/players/{id}", method="DELETE", path_params={"id": "ID"}))
+            self.assertEqual(200, response["statusCode"])
+            self.assertEqual({}, json.loads(response["body"]))
+
+        player_id = delete_player_mock.call_args.args[0]
+        self.assertEqual("ID", player_id)
+
+    def test_get_matches(self):
+        # TODO
+        pass
+
+    def test_create_match(self):
+        # TODO
+        pass
+
+    def test_delete_match(self):
+        # TODO
+        pass
+
+    def assert_player_json(self, expected_player: Player, json_player: Dict):
+        self.assertEqual(expected_player.player_id, json_player["player_id"])
+        self.assertEqual(expected_player.owner_user_id, json_player["owner_user_id"])
+        self.assertEqual(expected_player.image_url, json_player["image_url"])
+        self.assertEqual(expected_player.first_name, json_player["first_name"])
+        self.assertEqual(expected_player.last_name, json_player["last_name"])
+        self.assertEqual(expected_player.dominant_hand.name, json_player["dominant_hand"])
+        self.assertEqual(expected_player.notes, json_player["notes"])
+        self.assertEqual(expected_player.phone_number, json_player["phone_number"])
+        self.assertEqual(expected_player.email, json_player["email"])
+        self.assertEqual(expected_player.level, json_player["level"])
 
 
 def create_event(resource, path_params=None, method="GET", body=None, query_params=None):
