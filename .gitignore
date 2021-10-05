@@ -2,3 +2,4 @@
 
 venv/
 properties.py
+firebase_creds.json
