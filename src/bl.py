@@ -64,6 +64,26 @@ class ManagerImpl(Manager):
         player.player_id = str(uuid.uuid4())
         return self.dao.create_player(player)
 
+    def update_player(self, player_id: str, player: Player) -> Player:
+        # TODO: Implement
+        pass
+
+    def delete_player(self, player_id: str) -> Dict:
+        # TODO: Implement
+        pass
+
+    def get_matches(self) -> List[Match]:
+        # TODO: Implement
+        pass
+
+    def create_match(self) -> Match:
+        # TODO: Implement
+        pass
+
+    def delete_match(self, match_id: str) -> Dict:
+        # TODO: Implement
+        pass
+
     def require_auth(self):
         if self.user is None:
             raise ServiceException("Unable to authenticate", 401)
