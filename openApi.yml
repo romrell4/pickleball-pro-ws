@@ -1,373 +1,442 @@
-openapi: 3.0.0
+openapi: "3.0.1"
 info:
-  version: 0.1.0
-  title: pickleball-pro
+  title: "pickleball-pro"
+  version: "0.1.0"
+servers:
+- url: "https://bmsq3uf3uc.execute-api.us-west-2.amazonaws.com/{basePath}"
+  variables:
+    basePath:
+      default: "/prod"
 paths:
-  /user:
-    post:
-      summary: 'Create User'
-      operationId: 'createUser'
-      tags:
-        - user
-      responses:
-        '200':
-          description: 'Newly created user'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/NotAuthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '500':
-          $ref: '#/components/responses/DefaultError'
-  /players:
-    get:
-      summary: 'get a list of players'
-      operationId: 'getPlayers'
-      tags:
-        - player
-      responses:
-        '200':
-          description: 'Returns a list of players'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Players'
-        '401':
-          $ref: '#/components/responses/NotAuthorized'
-        '500':
-          $ref: '#/components/responses/DefaultError'
-    post:
-      summary: 'Create a new player'
-      operationId: 'createPlayer'
-      tags:
-        - player
-      requestBody:
-        description: 'The player to be created'
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Player'
-      responses:
-        '200':
-          description: 'Created a new player'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Player'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/NotAuthorized'
-        '500':
-          $ref: '#/components/responses/DefaultError'
-  /players/{id}:
-    put:
-      summary: "Edit a player by id"
-      parameters:
-        - name: id
-          in: path
-          description: Player ID
-          required: true
-          schema:
-            type: integer
-            format: int64
-      operationId: 'editPlayer'
-      tags:
-        - player
-      requestBody:
-        description: 'The edited player'
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Player'
-      responses:
-        '200':
-          description: 'Edited player'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Player'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/NotAuthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/DefaultError'
-    delete:
-      summary: "Delete a player by id"
-      parameters:
-        - name: id
-          in: path
-          description: Player ID
-          required: true
-          schema:
-            type: string
-      operationId: 'deletePlayer'
-      tags:
-        - player
-      responses:
-        '204':
-          description: 'Player was deleted successfully'
-        '401':
-          $ref: '#/components/responses/NotAuthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/DefaultError'
   /matches:
     get:
-      summary: 'Get list of all matches'
-      operationId: 'getMatches'
-      tags:
-        - match
+      operationId: "getMatches"
       responses:
-        '200':
-          description: 'Get all matches associated with an account'
+        "401":
+          description: "401 response"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Matches'
-        '401':
-          $ref: '#/components/responses/NotAuthorized'
-        '500':
-          $ref: '#/components/responses/DefaultError'
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matches"
     post:
-      summary: 'Create a new match'
-      operationId: 'createMatch'
-      tags:
-        - match
+      operationId: "createMatch"
       requestBody:
-        description: 'The new match to post'
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Match'
+              $ref: "#/components/schemas/Match"
+        required: true
       responses:
-        '200':
-          description: 'New match that was created'
+        "200":
+          description: "200 response"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Match'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/NotAuthorized'
-        '500':
-          $ref: '#/components/responses/DefaultError'
+                $ref: "#/components/schemas/Match"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /matches/{id}:
     delete:
-      summary: "Delete a match by id"
+      operationId: "deleteMatch"
       parameters:
-        - name: id
-          in: path
-          description: Player ID
-          required: true
-          schema:
-            type: string
-      operationId: 'deleteMatch'
-      tags:
-        - match
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
       responses:
-        '204':
-          description: 'The match was deleted successfully'
-        '401':
-          $ref: '#/components/responses/NotAuthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/DefaultError'
+        "404":
+          description: "404 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "204":
+          description: "204 response"
+          content: {}
+        "403":
+          description: "403 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user:
+    post:
+      operationId: "createUser"
+      responses:
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "403 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /players:
+    get:
+      operationId: "getPlayers"
+      responses:
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Players"
+    post:
+      operationId: "createPlayer"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Player"
+        required: true
+      responses:
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /players/{id}:
+    put:
+      operationId: "editPlayer"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Player"
+        required: true
+      responses:
+        "404":
+          description: "404 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+        "400":
+          description: "400 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: "403 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      operationId: "deletePlayer"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "404":
+          description: "404 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: "401 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: "500 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "204":
+          description: "204 response"
+          content: {}
+        "403":
+          description: "403 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 components:
-  responses:
-    BadRequest:
-      description: 'Bad Request'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    NotAuthorized:
-      description: 'Not Authorized'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Forbidden:
-      description: 'Forbidden'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    NotFound:
-      description: 'Not Found'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    DefaultError:
-      description: 'Internal Server Error'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
   schemas:
-    User:
-      type: object
+    Player:
       required:
-        - user_id
-        - first_name
-        - last_name
-        - image_url
+      - "first_name"
+      - "image_url"
+      - "last_name"
+      - "player_id"
+      type: "object"
+      properties:
+        player_id:
+          type: "string"
+        first_name:
+          type: "string"
+        last_name:
+          type: "string"
+        image_url:
+          type: "string"
+        dominant_hand:
+          type: "string"
+          enum:
+          - "RIGHT"
+          - "LEFT"
+        notes:
+          type: "string"
+        phone_number:
+          type: "string"
+        email:
+          type: "string"
+        level:
+          type: "number"
+          format: "double"
+    Stat:
+      required:
+      - "game_index"
+      - "player_id"
+      - "shot_result"
+      - "shot_type"
+      type: "object"
+      properties:
+        player_id:
+          type: "string"
+        game_index:
+          type: "integer"
+          format: "int64"
+        shot_result:
+          type: "string"
+          enum:
+          - "WINNER"
+          - "ERROR"
+        shot_type:
+          type: "string"
+          enum:
+          - "SERVE"
+          - "DROP"
+          - "DINK"
+          - "DRIVE"
+          - "VOLLEY"
+          - "LOB"
+          - "OVERHEAD"
+        shot_side:
+          type: "string"
+          enum:
+          - "FOREHAND"
+          - "BACKHAND"
+    User:
+      required:
+      - "first_name"
+      - "image_url"
+      - "last_name"
+      - "user_id"
+      type: "object"
       properties:
         user_id:
-          type: string
+          type: "string"
         first_name:
-          type: string
+          type: "string"
         last_name:
-          type: string
-    Player:
-      type: object
-      required:
-        - player_id
-        - first_name
-        - last_name
-        - image_url
-      properties:
-        player_id:
-          type: string
-        first_name:
-          type: string
-        last_name:
-          type: string
-        image_url:
-          type: string
-        dominant_hand:
-          type: string
-          enum: [ RIGHT, LEFT ]
-        notes:
-          type: string
-        phone_number:
-          type: string
-        email:
-          type: string
-        level:
-          type: number
-          format: double
-    Players:
-      type: array
-      items:
-        type: object
-        properties:
-          schema:
-            $ref: '#/components/schemas/Player'
+          type: "string"
     Matches:
-      type: array
+      type: "array"
       items:
-        type: object
+        type: "object"
         properties:
           schema:
-            $ref: '#/components/schemas/Match'
-    Match:
-      type: object
-      required:
-        - match_id
-        - date
-        - team1_player1
-        - team2_player1
-        - scores
-      properties:
-        match_id:
-          type: string
-        date:
-          type: string
-        team1_player1:
-          type: object
-          properties:
-            schema:
-              $ref: '#/components/schemas/Player'
-        team1_player2:
-          type: object
-          properties:
-            schema:
-              $ref: '#/components/schemas/Player'
-        team2_player1:
-          type: object
-          properties:
-            schema:
-              $ref: '#/components/schemas/Player'
-        team2_player2:
-          type: object
-          properties:
-            schema:
-              $ref: '#/components/schemas/Player'
-        scores:
-          type: array
-          items:
-            type: object
-            properties:
-              schema:
-                $ref: '#/components/schemas/GameScore'
-        stats:
-          type: array
-          items:
-            type: object
-            properties:
-              schema:
-                $ref: '#/components/schemas/Stat'
-    GameScore:
-      type: object
-      required:
-        - team1_score
-        - team2_score
-      properties:
-        team1_score:
-          type: integer
-          format: int64
-        team2_score:
-          type: integer
-          format: int64
-    Stat:
-      type: object
-      required:
-        - player_id
-        - game_index
-        - shot_result
-        - shot_type
-      properties:
-        player_id:
-          type: string
-        game_index:
-          type: integer
-          format: int64
-        shot_result:
-          type: string
-          enum: [ WINNER, ERROR ]
-        shot_type:
-          type: string
-          enum: [ SERVE, DROP, DINK, DRIVE, VOLLEY, LOB, OVERHEAD ]
-        shot_side:
-          type: string
-          enum: [ FOREHAND, BACKHAND ]
+            $ref: "#/components/schemas/Match"
     Error:
-      type: object
       required:
-        - code
-        - message
+      - "code"
+      - "message"
+      type: "object"
       properties:
         code:
-          type: integer
-          format: int32
+          type: "integer"
+          format: "int32"
         message:
-          type: string
+          type: "string"
+    GameScore:
+      required:
+      - "team1_score"
+      - "team2_score"
+      type: "object"
+      properties:
+        team1_score:
+          type: "integer"
+          format: "int64"
+        team2_score:
+          type: "integer"
+          format: "int64"
+    Match:
+      required:
+      - "date"
+      - "match_id"
+      - "scores"
+      - "team1_player1"
+      - "team2_player1"
+      type: "object"
+      properties:
+        match_id:
+          type: "string"
+        date:
+          type: "string"
+        team1_player1:
+          type: "object"
+          properties:
+            schema:
+              $ref: "#/components/schemas/Player"
+        team1_player2:
+          type: "object"
+          properties:
+            schema:
+              $ref: "#/components/schemas/Player"
+        team2_player1:
+          type: "object"
+          properties:
+            schema:
+              $ref: "#/components/schemas/Player"
+        team2_player2:
+          type: "object"
+          properties:
+            schema:
+              $ref: "#/components/schemas/Player"
+        scores:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              schema:
+                $ref: "#/components/schemas/GameScore"
+        stats:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              schema:
+                $ref: "#/components/schemas/Stat"
+    Players:
+      type: "array"
+      items:
+        type: "object"
+        properties:
+          schema:
+            $ref: "#/components/schemas/Player"

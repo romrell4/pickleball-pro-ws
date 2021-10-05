@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Run the test suite
+python test/test_runner.py
+RESULT=$?
+if [ $RESULT -ne 0 ]; then
+	echo ""
+	echo "Failed tests. Code will not be deployed until all tests are resolved"
+	exit $RESULT
+fi
+
+# Zip and update the code for the Lambda
+cd src
+pip install -r ../requirements.txt -t .
+zip -r lambda.zip *
+aws lambda update-function-code --function-name pickleball-pro-ws --zip-file fileb://lambda.zip --profile personal
+git status | grep '\t' | xargs -I {} rm -r {}
+cd ..
