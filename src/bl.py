@@ -1,6 +1,8 @@
 import uuid
 from typing import List, Optional, Dict
 
+from firebase_admin.auth import ExpiredIdTokenError, InvalidIdTokenError
+
 from da import Dao
 from domain import User, ServiceException, Player, Match
 from firebase_client import FirebaseClient
@@ -49,7 +51,7 @@ class ManagerImpl(Manager):
 
                 self.user = User(str(uuid.uuid4()), firebase_user["user_id"], first_name, last_names, firebase_user.get("picture"))
                 self.dao.create_user(self.user)
-        except (KeyError, ValueError) as e:
+        except (KeyError, ValueError, InvalidIdTokenError, ExpiredIdTokenError) as e:
             print(e)
             self.user = None
 
