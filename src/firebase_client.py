@@ -6,7 +6,7 @@ from firebase_admin import auth
 
 class FirebaseClient:
     @staticmethod
-    def get_firebase_user(token: Optional[str]): pass
+    def get_firebase_user(token: str): pass
 
 
 class FirebaseClientImpl(FirebaseClient):
@@ -14,5 +14,5 @@ class FirebaseClientImpl(FirebaseClient):
         firebase_admin.initialize_app()
 
     @staticmethod
-    def get_firebase_user(token: Optional[str]):
+    def get_firebase_user(token: str):
         return auth.verify_id_token(token)

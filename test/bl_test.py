@@ -18,6 +18,12 @@ class Test(unittest.TestCase):
         self.manager.validate_token(None)
         self.assertIsNone(self.manager.user)
 
+        # Test when firebase throws an error (invalid token)
+        def raise_error(_): raise ValueError()
+        with patch.object(self.manager.firebase_client, "get_firebase_user", side_effect=raise_error):
+            self.manager.validate_token(None)
+            self.assertIsNone(self.manager.user)
+
         # Test invalid token response
         with patch.object(self.manager.firebase_client, "get_firebase_user", return_value={}) as mock:
             self.manager.validate_token("token")

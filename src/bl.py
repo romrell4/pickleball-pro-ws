@@ -35,6 +35,9 @@ class ManagerImpl(Manager):
         self.user = None
 
     def validate_token(self, token: Optional[str]):
+        if token is None:
+            return
+
         try:
             firebase_user = self.firebase_client.get_firebase_user(token)
             # TODO: Use this log to determine what fields can come from the JWT
