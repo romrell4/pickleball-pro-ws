@@ -30,6 +30,17 @@ class Test(unittest.TestCase):
             self.assertIsNone(self.manager.user)
         mock.assert_called_once_with("token")
 
+        # Test a new user with an empty name
+        with patch.object(self.manager.firebase_client, "get_firebase_user", return_value={"user_id": "NEW_FB_ID", "name": "", "email": "EMAIL", "picture": "PICTURE"}):
+            with patch.object(self.manager.dao, "get_user_by_firebase_id", return_value=None):
+                self.manager.validate_token("")
+                self.assertIsNotNone(self.manager.user)
+                self.assertIsNotNone(self.manager.user.user_id)
+                self.assertEqual("NEW_FB_ID", self.manager.user.firebase_id)
+                self.assertEqual("", self.manager.user.first_name)
+                self.assertEqual("", self.manager.user.last_name)
+                self.assertEqual("PICTURE", self.manager.user.image_url)
+
         # Test a new user
         with patch.object(self.manager.firebase_client, "get_firebase_user", return_value={"user_id": "NEW_FB_ID", "name": "FIRST MIDDLE LAST", "email": "EMAIL", "picture": "PICTURE"}):
             with patch.object(self.manager.dao, "get_user_by_firebase_id", return_value=None):

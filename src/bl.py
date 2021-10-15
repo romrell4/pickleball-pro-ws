@@ -40,14 +40,17 @@ class ManagerImpl(Manager):
 
         try:
             firebase_user = self.firebase_client.get_firebase_user(token)
-            # TODO: Use this log to determine what fields can come from the JWT
-            print(firebase_user)
             self.user = self.dao.get_user_by_firebase_id(firebase_user["user_id"])
             if self.user is None:
-                first_name, last_names = firebase_user["name"].split(" ", 1)
+                try:
+                    first_name, last_names = firebase_user["name"].split(" ", 1)
+                except ValueError:
+                    first_name, last_names = "", ""
+
                 self.user = User(str(uuid.uuid4()), firebase_user["user_id"], first_name, last_names, firebase_user.get("picture"))
                 self.dao.create_user(self.user)
-        except (KeyError, ValueError):
+        except (KeyError, ValueError) as e:
+            print(e)
             self.user = None
 
     def get_players(self):
