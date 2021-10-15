@@ -58,6 +58,7 @@ class Handler:
             else:
                 raise ServiceException("Invalid path: '{} {}'".format(resource, method))
 
+            print("Responding with", response_body)
             return format_response(response_body)
         except ServiceException as e:
             return format_response({"error": e.error_message}, e.status_code)
