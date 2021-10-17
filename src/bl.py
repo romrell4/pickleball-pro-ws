@@ -51,6 +51,7 @@ class ManagerImpl(Manager):
 
                 self.user = User(str(uuid.uuid4()), firebase_user["user_id"], first_name, last_names, firebase_user.get("picture"))
                 self.dao.create_user(self.user)
+                # TODO: Create a player as well?
         except (KeyError, ValueError, InvalidIdTokenError, ExpiredIdTokenError) as e:
             print(e)
             self.user = None
@@ -63,8 +64,7 @@ class ManagerImpl(Manager):
     def create_player(self, player: Player) -> Player:
         self.require_auth()
 
-        if self.user.user_id != player.owner_user_id:
-            raise ServiceException("Cannot create a player owned by a different user", 403)
+        player.owner_user_id = self.user.user_id
 
         player.player_id = str(uuid.uuid4())
         return self.dao.create_player(player)

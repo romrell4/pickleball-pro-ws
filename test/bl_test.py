@@ -75,14 +75,7 @@ class Test(unittest.TestCase):
     def test_create_player(self):
         self.assert_requires_auth(lambda: self.manager.create_player(fixtures.player()))
 
-        # Test creating a user for someone else
-        with self.assertRaises(ServiceException) as e:
-            self.manager.create_player(fixtures.player())
-        self.assertEqual(403, e.exception.status_code)
-        self.assertEqual("Cannot create a player owned by a different user", e.exception.error_message)
-
         test_player = fixtures.player()
-        test_player.owner_user_id = fixtures.user().user_id
         with patch.object(self.manager.dao, "create_player", return_value=fixtures.player()) as create_player_mock:
             player = self.manager.create_player(test_player)
             self.assertEqual(fixtures.player(), player)
@@ -90,6 +83,8 @@ class Test(unittest.TestCase):
         create_player_mock.assert_called_once()
         player = create_player_mock.call_args.args[0]
         self.assertNotEqual(fixtures.player().player_id, player.player_id)
+        # Make sure the owner user id is overridden
+        self.assertEqual(fixtures.user().user_id, player.owner_user_id)
 
     def assert_requires_auth(self, fun: Callable):
         self.manager.user = None

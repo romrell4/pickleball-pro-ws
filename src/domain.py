@@ -78,16 +78,17 @@ class Player(Codable):
             if dominant_hand is not None:
                 dominant_hand = DominantHand[dominant_hand]
             return Player(
-                player_id,
-                d["owner_user_id"],
-                d["image_url"],
-                d["first_name"],
-                d["last_name"],
-                dominant_hand,
-                d.get("notes"),
-                d.get("phone_number"),
-                d.get("email"),
-                d.get("level"),
+                player_id=player_id,
+                # The owner id won't be passed by the FE. It will be filled in before being saved
+                owner_user_id="",
+                image_url=d["image_url"],
+                first_name=d["first_name"],
+                last_name=d["last_name"],
+                dominant_hand=dominant_hand,
+                notes=d.get("notes"),
+                phone_number=d.get("phone_number"),
+                email=d.get("email"),
+                level=d.get("level"),
             )
         except KeyError as e:
             raise DomainException(f"Missing required key '{e.args[0]}' in request body")
