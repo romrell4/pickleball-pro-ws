@@ -79,7 +79,7 @@ class ManagerImpl(Manager):
 
     def get_matches(self) -> List[Match]:
         # TODO: Implement
-        pass
+        return []
 
     def create_match(self) -> Match:
         # TODO: Implement
