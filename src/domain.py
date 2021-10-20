@@ -70,6 +70,7 @@ class Player(Codable):
                 player_id=player_id,
                 # The owner id won't be passed by the FE. It will be filled in before being saved
                 owner_user_id="",
+                is_owner=d.get("is_owner", False),
                 image_url=d.get("image_url"),
                 first_name=d["first_name"],
                 last_name=d["last_name"],

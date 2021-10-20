@@ -36,7 +36,7 @@ class Test(unittest.TestCase):
         response = self.handler.handle(create_event("/players", method="POST", body="{}"))
         self.assertEqual(400, response["statusCode"])
         error = json.loads(response["body"])
-        self.assertEqual("Missing required key 'image_url' in request body", error["error"])
+        self.assertEqual("Missing required key 'first_name' in request body", error["error"])
 
         # Not having an owner_user_id should still pass
         input_player = fixtures.player()
@@ -56,7 +56,7 @@ class Test(unittest.TestCase):
         response = self.handler.handle(create_event("/players/{id}", method="PUT", path_params={"id": "ID"}, body="{}"))
         self.assertEqual(400, response["statusCode"])
         error = json.loads(response["body"])
-        self.assertEqual("Missing required key 'image_url' in request body", error["error"])
+        self.assertEqual("Missing required key 'first_name' in request body", error["error"])
 
         # Not having an owner_user_id should still pass
         input_player = fixtures.player()
@@ -97,6 +97,7 @@ class Test(unittest.TestCase):
     def assert_player_json(self, expected_player: Player, json_player: Dict):
         self.assertEqual(expected_player.player_id, json_player["player_id"])
         self.assertEqual(expected_player.owner_user_id, json_player["owner_user_id"])
+        self.assertEqual(expected_player.is_owner, json_player["is_owner"])
         self.assertEqual(expected_player.image_url, json_player["image_url"])
         self.assertEqual(expected_player.first_name, json_player["first_name"])
         self.assertEqual(expected_player.last_name, json_player["last_name"])
