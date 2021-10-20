@@ -65,8 +65,6 @@ class Player(Codable):
             if player_id == "":
                 player_id = str(uuid.uuid4())
 
-            print(d.get("level"))
-
             return Player(
                 player_id=player_id,
                 # The owner id won't be passed by the FE. It will be filled in before being saved

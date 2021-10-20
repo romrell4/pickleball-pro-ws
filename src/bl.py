@@ -72,10 +72,10 @@ class ManagerImpl(Manager):
     def update_player(self, player_id: str, player: Player) -> Player:
         self.require_auth()
 
-        player = self.dao.get_player(player_id)
-        if player is None:
+        current_player = self.dao.get_player(player_id)
+        if current_player is None:
             raise ServiceException("Player not found", 404)
-        elif player.owner_user_id != self.user.user_id:
+        elif current_player.owner_user_id != self.user.user_id:
             raise ServiceException("You cannot update a player you don't own.", 403)
 
         return self.dao.update_player(player_id, player)
