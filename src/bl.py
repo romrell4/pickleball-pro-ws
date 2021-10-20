@@ -49,9 +49,9 @@ class ManagerImpl(Manager):
                 except ValueError:
                     first_name, last_names = "", ""
 
-                self.user = User(str(uuid.uuid4()), firebase_user["user_id"], first_name, last_names, firebase_user.get("picture"))
+                self.user = User(user_id=str(uuid.uuid4()), firebase_id=firebase_user["user_id"], first_name=first_name, last_name=last_names, image_url=firebase_user.get("picture"))
                 self.dao.create_user(self.user)
-                # TODO: Create a player as well?
+                self.dao.create_player(Player(player_id=str(uuid.uuid4()), owner_user_id=self.user.user_id, is_owner=True, image_url=self.user.image_url, first_name=self.user.first_name, last_name=self.user.last_name, email=firebase_user.get("email")))
         except (KeyError, ValueError, InvalidIdTokenError, ExpiredIdTokenError) as e:
             print(e)
             self.user = None
@@ -65,6 +65,7 @@ class ManagerImpl(Manager):
         self.require_auth()
 
         player.owner_user_id = self.user.user_id
+        player.is_owner = False
 
         player.player_id = str(uuid.uuid4())
         return self.dao.create_player(player)

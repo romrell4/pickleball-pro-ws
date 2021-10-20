@@ -285,6 +285,7 @@ components:
       - "image_url"
       - "last_name"
       - "player_id"
+      - "is_owner"
       type: "object"
       properties:
         player_id:
@@ -309,6 +310,8 @@ components:
         level:
           type: "number"
           format: "double"
+        is_owner:
+          type: "boolean"
     Stat:
       required:
       - "game_index"

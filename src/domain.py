@@ -49,7 +49,8 @@ class Match(Codable):
 class Player(Codable):
     player_id: str
     owner_user_id: str
-    image_url: str
+    is_owner: bool
+    image_url: Optional[str]
     first_name: str
     last_name: str
     dominant_hand: Optional[str] = None
@@ -69,7 +70,7 @@ class Player(Codable):
                 player_id=player_id,
                 # The owner id won't be passed by the FE. It will be filled in before being saved
                 owner_user_id="",
-                image_url=d["image_url"],
+                image_url=d.get("image_url"),
                 first_name=d["first_name"],
                 last_name=d["last_name"],
                 dominant_hand=d.get("dominant_hand"),

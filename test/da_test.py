@@ -26,8 +26,8 @@ class Test(unittest.TestCase):
                 ('TEST3', 'fb3', 'Tester', 'Three', 'test3.jpg'),
                 ('TEST4', 'fb4', 'Tester', 'Four', 'test4.jpg')
             """)
-            self.dao.insert("""insert into players (id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level) values 
-                ('1', 'TEST1', 'image.jpg', 'first', 'last', 'LEFT', 'notes', 'phone', 'email', 5.2)
+            self.dao.insert("""insert into players (id, owner_user_id, is_owner, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level) values 
+                ('1', 'TEST1', True, 'image.jpg', 'first', 'last', 'LEFT', 'notes', 'phone', 'email', 5.2)
             """)
         except:
             self.tearDown()
@@ -83,10 +83,11 @@ class Test(unittest.TestCase):
         self.assertIsNotNone(player)
 
     def test_create_player(self):
-        player = self.dao.create_player(Player("0", "TEST1", "image_url", "first_name", "last_name", "RIGHT", "notes", "phone_number", "email", 5.0))
+        player = self.dao.create_player(Player("0", "TEST1", True, "image_url", "first_name", "last_name", "RIGHT", "notes", "phone_number", "email", 5.0))
         self.assertIsNotNone(player)
         self.assertEqual("0", player.player_id)
         self.assertEqual("TEST1", player.owner_user_id)
+        self.assertTrue(player.is_owner)
         self.assertEqual("image_url", player.image_url)
         self.assertEqual("first_name", player.first_name)
         self.assertEqual("last_name", player.last_name)
@@ -97,11 +98,12 @@ class Test(unittest.TestCase):
         self.assertEqual(5.0, player.level)
 
         # Create a player with everything as none
-        player = self.dao.create_player(Player("-1", "TEST1", "image_url", "first_name", "", None, None, None, None, None))
+        player = self.dao.create_player(Player("-1", "TEST1", False, None, "first_name", "", None, None, None, None, None))
         self.assertIsNotNone(player)
         self.assertEqual("-1", player.player_id)
         self.assertEqual("TEST1", player.owner_user_id)
-        self.assertEqual("image_url", player.image_url)
+        self.assertFalse(player.is_owner)
+        self.assertIsNone(player.image_url)
         self.assertEqual("first_name", player.first_name)
         self.assertEqual("", player.last_name)
         self.assertIsNone(player.dominant_hand)
@@ -111,10 +113,11 @@ class Test(unittest.TestCase):
         self.assertIsNone(player.level)
 
     def test_update_player(self):
-        player = self.dao.update_player("1", Player("new_player_id", "new_owner_user_id", "new_image_url", "new_first", "new_last", "RIGHT", "new_notes", "new_phone", "new_email", 1.23))
-        # You can't change the id or owner id
+        player = self.dao.update_player("1", Player("new_player_id", "new_owner_user_id", False, "new_image_url", "new_first", "new_last", "RIGHT", "new_notes", "new_phone", "new_email", 1.23))
+        # You can't change the id or owner info
         self.assertEqual("1", player.player_id)
         self.assertEqual("TEST1", player.owner_user_id)
+        self.assertTrue(player.is_owner)
         # These can be changed
         self.assertEqual("new_image_url", player.image_url)
         self.assertEqual("new_first", player.first_name)
