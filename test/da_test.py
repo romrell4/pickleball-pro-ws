@@ -124,7 +124,7 @@ class Test(unittest.TestCase):
         self.assertEqual("new_phone", player.phone_number)
         self.assertEqual("new_email", player.email)
         # This will get rounded by the db
-        self.assertAlmostEqual(1.2, float(player.level))
+        self.assertAlmostEqual(1.2, player.level)
 
     def test_delete_player(self):
         self.dao.delete_player("1")

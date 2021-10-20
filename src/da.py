@@ -1,5 +1,7 @@
 from typing import List
 
+from pymysql.constants import FIELD_TYPE
+
 from domain import *
 import pymysql
 import os
@@ -26,7 +28,17 @@ class Dao:
 class DaoImpl(Dao):
     def __init__(self):
         try:
-            self.conn = pymysql.connect(host=os.environ["DB_HOST"], user=(os.environ["DB_USERNAME"]), passwd=(os.environ["DB_PASSWORD"]), db=(os.environ["DB_DATABASE_NAME"]), autocommit=True)
+            conv = pymysql.converters.conversions.copy()
+            conv[FIELD_TYPE.DECIMAL] = float
+            conv[FIELD_TYPE.NEWDECIMAL] = float
+            self.conn = pymysql.connect(
+                host=os.environ["DB_HOST"],
+                user=(os.environ["DB_USERNAME"]),
+                passwd=(os.environ["DB_PASSWORD"]),
+                db=(os.environ["DB_DATABASE_NAME"]),
+                conv=conv,
+                autocommit=True
+            )
         except Exception as e:
             print("ERROR: Could not connect to MySQL", e)
             raise ServiceException("Failed to connect to database")
