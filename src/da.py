@@ -31,6 +31,7 @@ class DaoImpl(Dao):
             conv = pymysql.converters.conversions.copy()
             conv[FIELD_TYPE.DECIMAL] = float
             conv[FIELD_TYPE.NEWDECIMAL] = float
+            conv[FIELD_TYPE.TINY] = lambda data: data == "1"
             self.conn = pymysql.connect(
                 host=os.environ["DB_HOST"],
                 user=(os.environ["DB_USERNAME"]),
