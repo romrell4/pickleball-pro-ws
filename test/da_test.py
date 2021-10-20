@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from test import properties
+from test import properties, fixtures
 from da import DaoImpl
 from domain import *
 
@@ -78,6 +78,10 @@ class Test(unittest.TestCase):
         players = self.dao.get_players("TEST1")
         self.assertEqual(1, len(players))
 
+    def test_get_player(self):
+        player = self.dao.get_player("1")
+        self.assertIsNotNone(player)
+
     def test_create_player(self):
         player = self.dao.create_player(Player("0", "TEST1", "image_url", "first_name", "last_name", "RIGHT", "notes", "phone_number", "email", 5.0))
         self.assertIsNotNone(player)
@@ -105,3 +109,23 @@ class Test(unittest.TestCase):
         self.assertIsNone(player.phone_number)
         self.assertIsNone(player.email)
         self.assertIsNone(player.level)
+
+    def test_update_player(self):
+        player = self.dao.update_player("1", Player("new_player_id", "new_owner_user_id", "new_image_url", "new_first", "new_last", "RIGHT", "new_notes", "new_phone", "new_email", 1.23))
+        # You can't change the id or owner id
+        self.assertEqual("1", player.player_id)
+        self.assertEqual("TEST1", player.owner_user_id)
+        # These can be changed
+        self.assertEqual("new_image_url", player.image_url)
+        self.assertEqual("new_first", player.first_name)
+        self.assertEqual("new_last", player.last_name)
+        self.assertEqual("RIGHT", player.dominant_hand)
+        self.assertEqual("new_notes", player.notes)
+        self.assertEqual("new_phone", player.phone_number)
+        self.assertEqual("new_email", player.email)
+        # This will get rounded by the db
+        self.assertAlmostEqual(1.2, float(player.level))
+
+    def test_delete_player(self):
+        self.dao.delete_player("1")
+        self.assertIsNone(self.dao.get_player("1"))

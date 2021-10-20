@@ -14,7 +14,13 @@ class Dao:
 
     def get_players(self, owner_user_id: str) -> List[Player]: pass
 
+    def get_player(self, player_id: str) -> Player: pass
+
     def create_player(self, player: Player) -> Player: pass
+
+    def update_player(self, player_id: str, player: Player) -> Player: pass
+
+    def delete_player(self, player_id: str): pass
 
 
 class DaoImpl(Dao):
@@ -39,9 +45,19 @@ class DaoImpl(Dao):
     def get_players(self, owner_user_id: str) -> List[Player]:
         return self.get_list(Player, "select id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level from players where owner_user_id = %s", owner_user_id)
 
+    def get_player(self, player_id: str) -> Player:
+        return self.get_one(Player, "select id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level from players where id = %s", player_id)
+
     def create_player(self, player: Player) -> Player:
         self.insert("insert into players (id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", player.player_id, player.owner_user_id, player.image_url, player.first_name, player.last_name, player.dominant_hand, player.notes, player.phone_number, player.email, player.level)
-        return self.get_one(Player, "select id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level from players where id = %s", player.player_id)
+        return self.get_player(player.player_id)
+
+    def update_player(self, player_id: str, player: Player) -> Player:
+        self.execute("update players set image_url = %s, first_name = %s, last_name = %s, dominant_hand = %s, notes = %s, phone_number = %s, email_address = %s, level = %s where id = %s", player.image_url, player.first_name, player.last_name, player.dominant_hand, player.notes, player.phone_number, player.email, player.level, player_id)
+        return self.get_player(player_id)
+
+    def delete_player(self, player_id: str):
+        self.execute("delete from players where id = %s", player_id)
 
     ### UTILS ###
 

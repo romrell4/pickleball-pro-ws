@@ -70,12 +70,27 @@ class ManagerImpl(Manager):
         return self.dao.create_player(player)
 
     def update_player(self, player_id: str, player: Player) -> Player:
-        # TODO: Implement
-        pass
+        self.require_auth()
+
+        player = self.dao.get_player(player_id)
+        if player is None:
+            raise ServiceException("Player not found", 404)
+        elif player.owner_user_id != self.user.user_id:
+            raise ServiceException("You cannot update a player you don't own.", 403)
+
+        return self.dao.update_player(player_id, player)
 
     def delete_player(self, player_id: str) -> Dict:
-        # TODO: Implement
-        pass
+        self.require_auth()
+
+        player = self.dao.get_player(player_id)
+        if player is None:
+            raise ServiceException("Player not found", 404)
+        elif player.owner_user_id != self.user.user_id:
+            raise ServiceException("You cannot delete a player you don't own.", 403)
+
+        self.dao.delete_player(player_id)
+        return {}
 
     def get_matches(self) -> List[Match]:
         # TODO: Implement

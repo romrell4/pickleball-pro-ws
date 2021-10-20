@@ -20,6 +20,7 @@ class Test(unittest.TestCase):
 
         # Test when firebase throws an error (invalid token)
         def raise_error(_): raise ValueError()
+
         with patch.object(self.manager.firebase_client, "get_firebase_user", side_effect=raise_error):
             self.manager.validate_token(None)
             self.assertIsNone(self.manager.user)
@@ -85,6 +86,54 @@ class Test(unittest.TestCase):
         self.assertNotEqual(fixtures.player().player_id, player.player_id)
         # Make sure the owner user id is overridden
         self.assertEqual(fixtures.user().user_id, player.owner_user_id)
+
+    def test_update_player(self):
+        self.assert_requires_auth(lambda: self.manager.update_player("", fixtures.player()))
+
+        with patch.object(self.manager.dao, "get_player", return_value=None) as get_player_mock:
+            with self.assertRaises(ServiceException) as e:
+                self.manager.update_player("", fixtures.player())
+            self.assertEqual(404, e.exception.status_code)
+            get_player_mock.assert_called_once_with("")
+
+        not_your_player = fixtures.player()
+        not_your_player.owner_user_id = "not you"
+        with patch.object(self.manager.dao, "get_player", return_value=not_your_player):
+            with self.assertRaises(ServiceException) as e:
+                self.manager.update_player("", fixtures.player())
+            self.assertEqual(403, e.exception.status_code)
+
+        your_player = fixtures.player()
+        your_player.owner_user_id = self.manager.user.user_id
+        with patch.object(self.manager.dao, "get_player", return_value=your_player):
+            with patch.object(self.manager.dao, "update_player", return_value=fixtures.player()) as update_player_mock:
+                result = self.manager.update_player("", your_player)
+                self.assertEqual(fixtures.player(), result)
+            update_player_mock.assert_called_once_with("", your_player)
+
+    def test_delete_player(self):
+        self.assert_requires_auth(lambda: self.manager.delete_player(""))
+
+        with patch.object(self.manager.dao, "get_player", return_value=None) as get_player_mock:
+            with self.assertRaises(ServiceException) as e:
+                self.manager.delete_player("")
+            self.assertEqual(404, e.exception.status_code)
+            get_player_mock.assert_called_once_with("")
+
+        not_your_player = fixtures.player()
+        not_your_player.owner_user_id = "not you"
+        with patch.object(self.manager.dao, "get_player", return_value=not_your_player):
+            with self.assertRaises(ServiceException) as e:
+                self.manager.delete_player("")
+            self.assertEqual(403, e.exception.status_code)
+
+        your_player = fixtures.player()
+        your_player.owner_user_id = self.manager.user.user_id
+        with patch.object(self.manager.dao, "get_player", return_value=your_player):
+            with patch.object(self.manager.dao, "delete_player") as delete_player_mock:
+                result = self.manager.delete_player("")
+                self.assertEqual({}, result)
+            delete_player_mock.assert_called_once_with("")
 
     def assert_requires_auth(self, fun: Callable):
         self.manager.user = None
