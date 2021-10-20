@@ -1,8 +1,8 @@
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
 from typing import Optional, Dict, Any
+
 
 class Codable:
     def to_dict(self) -> Dict[str, Any]:
@@ -32,6 +32,7 @@ class Match(Codable):
     team2_player1_id: str
     team2_player2_id: Optional[str]
     scores: str
+
     # TODO: Determine how to break down the scores into domain objects...
 
     @classmethod
@@ -44,11 +45,6 @@ class Match(Codable):
         return super().to_dict()
 
 
-class DominantHand(str, Enum):
-    LEFT = "LEFT"
-    RIGHT = "RIGHT"
-
-
 @dataclass
 class Player(Codable):
     player_id: str
@@ -56,16 +52,11 @@ class Player(Codable):
     image_url: str
     first_name: str
     last_name: str
-    dominant_hand: Optional[DominantHand] = None
+    dominant_hand: Optional[str] = None
     notes: Optional[str] = None
     phone_number: Optional[str] = None
     email: Optional[str] = None
     level: Optional[float] = None
-
-    def to_dict(self) -> Dict[str, Any]:
-        d = self.__dict__
-        d["dominant_hand"] = self.dominant_hand.name
-        return d
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]):
@@ -74,9 +65,6 @@ class Player(Codable):
             if player_id == "":
                 player_id = str(uuid.uuid4())
 
-            dominant_hand = d.get("dominant_hand")
-            if dominant_hand is not None:
-                dominant_hand = DominantHand[dominant_hand]
             return Player(
                 player_id=player_id,
                 # The owner id won't be passed by the FE. It will be filled in before being saved
@@ -84,7 +72,7 @@ class Player(Codable):
                 image_url=d["image_url"],
                 first_name=d["first_name"],
                 last_name=d["last_name"],
-                dominant_hand=dominant_hand,
+                dominant_hand=d.get("dominant_hand"),
                 notes=d.get("notes"),
                 phone_number=d.get("phone_number"),
                 email=d.get("email"),

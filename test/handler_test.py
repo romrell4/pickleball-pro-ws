@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import handler
 from bl import Manager
-from domain import User, Player, Match
+from domain import User, Player
 from test import fixtures
 
 
@@ -100,7 +100,7 @@ class Test(unittest.TestCase):
         self.assertEqual(expected_player.image_url, json_player["image_url"])
         self.assertEqual(expected_player.first_name, json_player["first_name"])
         self.assertEqual(expected_player.last_name, json_player["last_name"])
-        self.assertEqual(expected_player.dominant_hand.name, json_player["dominant_hand"])
+        self.assertEqual(expected_player.dominant_hand, json_player["dominant_hand"])
         self.assertEqual(expected_player.notes, json_player["notes"])
         self.assertEqual(expected_player.phone_number, json_player["phone_number"])
         self.assertEqual(expected_player.email, json_player["email"])

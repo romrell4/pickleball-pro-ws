@@ -40,7 +40,7 @@ class DaoImpl(Dao):
         return self.get_list(Player, "select id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level from players where owner_user_id = %s", owner_user_id)
 
     def create_player(self, player: Player) -> Player:
-        self.insert("insert into players (id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", player.player_id, player.owner_user_id, player.image_url, player.first_name, player.last_name, player.dominant_hand.name, player.notes, player.phone_number, player.email, player.level)
+        self.insert("insert into players (id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", player.player_id, player.owner_user_id, player.image_url, player.first_name, player.last_name, player.dominant_hand, player.notes, player.phone_number, player.email, player.level)
         return self.get_one(Player, "select id, owner_user_id, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level from players where id = %s", player.player_id)
 
     ### UTILS ###
