@@ -36,32 +36,42 @@ class Test(unittest.TestCase):
         response = self.handler.handle(create_event("/players", method="POST", body="{}"))
         self.assertEqual(400, response["statusCode"])
         error = json.loads(response["body"])
-        self.assertEqual("Missing required key 'owner_user_id' in request body", error["error"])
+        self.assertEqual("Missing required key 'image_url' in request body", error["error"])
 
+        # Not having an owner_user_id should still pass
+        input_player = fixtures.player()
+        input_player_dict = input_player.to_dict()
+        input_player_dict.pop("owner_user_id")
         with patch.object(self.handler.manager, "create_player", return_value=fixtures.player()) as create_player_mock:
-            response = self.handler.handle(create_event("/players", method="POST", body=json.dumps(fixtures.player().to_dict())))
+            response = self.handler.handle(create_event("/players", method="POST", body=json.dumps(input_player_dict)))
             self.assertEqual(200, response["statusCode"])
             self.assert_player_json(fixtures.player(), json.loads(response["body"]))
 
         player = create_player_mock.call_args.args[0]
         self.assertIsInstance(player, Player)
-        self.assertEqual(fixtures.player(), player)
+        input_player.owner_user_id = ""
+        self.assertEqual(input_player, player)
 
     def test_update_player(self):
         response = self.handler.handle(create_event("/players/{id}", method="PUT", path_params={"id": "ID"}, body="{}"))
         self.assertEqual(400, response["statusCode"])
         error = json.loads(response["body"])
-        self.assertEqual("Missing required key 'owner_user_id' in request body", error["error"])
+        self.assertEqual("Missing required key 'image_url' in request body", error["error"])
 
+        # Not having an owner_user_id should still pass
+        input_player = fixtures.player()
+        input_player_dict = input_player.to_dict()
+        input_player_dict.pop("owner_user_id")
         with patch.object(self.handler.manager, "update_player", return_value=fixtures.player()) as update_player_mock:
-            response = self.handler.handle(create_event("/players/{id}", method="PUT", path_params={"id": "ID"}, body=json.dumps(fixtures.player().to_dict())))
+            response = self.handler.handle(create_event("/players/{id}", method="PUT", path_params={"id": "ID"}, body=json.dumps(input_player_dict)))
             self.assertEqual(200, response["statusCode"])
             self.assert_player_json(fixtures.player(), json.loads(response["body"]))
 
         player_id, player = update_player_mock.call_args.args[0:2]
         self.assertEqual("ID", player_id)
         self.assertIsInstance(player, Player)
-        self.assertEqual(fixtures.player(), player)
+        input_player.owner_user_id = ""
+        self.assertEqual(input_player, player)
 
     def test_delete_player(self):
         with patch.object(self.handler.manager, "delete_player", return_value={}) as delete_player_mock:
