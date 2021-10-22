@@ -89,6 +89,8 @@ class ManagerImpl(Manager):
             raise ServiceException("Player not found", 404)
         elif player.owner_user_id != self.user.user_id:
             raise ServiceException("You cannot delete a player you don't own.", 403)
+        elif player.is_owner:
+            raise ServiceException("You cannot delete yourself.", 403)
 
         self.dao.delete_player(player_id)
         return {}

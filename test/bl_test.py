@@ -135,6 +135,13 @@ class Test(unittest.TestCase):
                 self.manager.delete_player("")
             self.assertEqual(403, e.exception.status_code)
 
+        you = fixtures.player()
+        you.is_owner = True
+        with patch.object(self.manager.dao, "get_player", return_value=you):
+            with self.assertRaises(ServiceException) as e:
+                self.manager.delete_player("")
+            self.assertEqual(403, e.exception.status_code)
+
         your_player = fixtures.player()
         your_player.owner_user_id = self.manager.user.user_id
         with patch.object(self.manager.dao, "get_player", return_value=your_player):
