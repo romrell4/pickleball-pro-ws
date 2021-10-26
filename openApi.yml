@@ -3,10 +3,10 @@ info:
   title: "pickleball-pro"
   version: "0.1.0"
 servers:
-- url: "https://bmsq3uf3uc.execute-api.us-west-2.amazonaws.com/{basePath}"
-  variables:
-    basePath:
-      default: "/prod"
+  - url: "https://bmsq3uf3uc.execute-api.us-west-2.amazonaws.com/{basePath}"
+    variables:
+      basePath:
+        default: "/prod"
 paths:
   /matches:
     get:
@@ -67,11 +67,11 @@ paths:
     delete:
       operationId: "deleteMatch"
       parameters:
-      - name: "id"
-        in: "path"
-        required: true
-        schema:
-          type: "string"
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
       responses:
         "404":
           description: "404 response"
@@ -93,7 +93,7 @@ paths:
                 $ref: "#/components/schemas/Error"
         "204":
           description: "204 response"
-          content: {}
+          content: { }
         "403":
           description: "403 response"
           content:
@@ -193,11 +193,11 @@ paths:
     put:
       operationId: "editPlayer"
       parameters:
-      - name: "id"
-        in: "path"
-        required: true
-        schema:
-          type: "string"
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
       requestBody:
         content:
           application/json:
@@ -244,11 +244,11 @@ paths:
     delete:
       operationId: "deletePlayer"
       parameters:
-      - name: "id"
-        in: "path"
-        required: true
-        schema:
-          type: "string"
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
       responses:
         "404":
           description: "404 response"
@@ -270,7 +270,7 @@ paths:
                 $ref: "#/components/schemas/Error"
         "204":
           description: "204 response"
-          content: {}
+          content: { }
         "403":
           description: "403 response"
           content:
@@ -281,11 +281,11 @@ components:
   schemas:
     Player:
       required:
-      - "first_name"
-      - "image_url"
-      - "last_name"
-      - "player_id"
-      - "is_owner"
+        - "first_name"
+        - "image_url"
+        - "last_name"
+        - "player_id"
+        - "is_owner"
       type: "object"
       properties:
         player_id:
@@ -299,8 +299,8 @@ components:
         dominant_hand:
           type: "string"
           enum:
-          - "RIGHT"
-          - "LEFT"
+            - "RIGHT"
+            - "LEFT"
         notes:
           type: "string"
         phone_number:
@@ -314,10 +314,10 @@ components:
           type: "boolean"
     Stat:
       required:
-      - "game_index"
-      - "player_id"
-      - "shot_result"
-      - "shot_type"
+        - "player_id"
+        - "game_index"
+        - "shot_result"
+        - "shot_type"
       type: "object"
       properties:
         player_id:
@@ -328,29 +328,29 @@ components:
         shot_result:
           type: "string"
           enum:
-          - "WINNER"
-          - "ERROR"
+            - "WINNER"
+            - "ERROR"
         shot_type:
           type: "string"
           enum:
-          - "SERVE"
-          - "DROP"
-          - "DINK"
-          - "DRIVE"
-          - "VOLLEY"
-          - "LOB"
-          - "OVERHEAD"
+            - "SERVE"
+            - "DROP"
+            - "DINK"
+            - "DRIVE"
+            - "VOLLEY"
+            - "LOB"
+            - "OVERHEAD"
         shot_side:
           type: "string"
           enum:
-          - "FOREHAND"
-          - "BACKHAND"
+            - "FOREHAND"
+            - "BACKHAND"
     User:
       required:
-      - "first_name"
-      - "image_url"
-      - "last_name"
-      - "user_id"
+        - "first_name"
+        - "image_url"
+        - "last_name"
+        - "user_id"
       type: "object"
       properties:
         user_id:
@@ -368,8 +368,8 @@ components:
             $ref: "#/components/schemas/Match"
     Error:
       required:
-      - "code"
-      - "message"
+        - "code"
+        - "message"
       type: "object"
       properties:
         code:
@@ -379,8 +379,8 @@ components:
           type: "string"
     GameScore:
       required:
-      - "team1_score"
-      - "team2_score"
+        - "team1_score"
+        - "team2_score"
       type: "object"
       properties:
         team1_score:
@@ -391,11 +391,11 @@ components:
           format: "int64"
     Match:
       required:
-      - "match_id"
-      - "date"
-      - "scores"
-      - "team1_player1"
-      - "team2_player1"
+        - "match_id"
+        - "date"
+        - "scores"
+        - "team1_player1"
+        - "team2_player1"
       type: "object"
       properties:
         match_id:

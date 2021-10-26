@@ -16,7 +16,10 @@ class GameScore(DomainBase):
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any], user: User):
-        return GameScore(d["team1_score"], d["team2_score"])
+        try:
+            return GameScore(d["team1_score"], d["team2_score"])
+        except KeyError as e:
+            raise DomainException(f"Missing required key '{e.args[0]}' in request body")
 
 
 @dataclass
@@ -26,6 +29,13 @@ class Stat(DomainBase):
     shot_result: str
     shot_type: str
     shot_side: str
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any], user: User):
+        try:
+            return Stat(d["player_id"], d["game_index"], d["shot_result"], d["shot_type"], d.get("shot_side"))
+        except KeyError as e:
+            raise DomainException(f"Missing required key '{e.args[0]}' in request body")
 
 
 @dataclass
@@ -48,9 +58,13 @@ class Match(DomainBase):
                 match_id = str(uuid.uuid4())
 
             team1, team2 = d["team1"], d["team2"]
-            # scores = ",".join([f"{score['team1_score']}-{score['team2_score']}" for score in d["scores"]])
+            if len(team1) == 0 or len(team2) == 0:
+                raise DomainException("Not enough players provided in each team")
+
             scores = [GameScore.from_dict(score, user) for score in d["scores"]]
-            stats = [Stat.from_dict(stat, user) for stat in d["stats"]]
+            if len(scores) == 0:
+                raise DomainException("No scores in the request body. A match must consist of at least one game")
+            stats = [Stat.from_dict(stat, user) for stat in d.get("stats", [])]
 
             return Match(
                 match_id=match_id,
@@ -67,10 +81,6 @@ class Match(DomainBase):
             raise DomainException(f"Missing required key '{e.args[0]}' in request body")
 
     def to_dict(self) -> Dict[str, Any]:
-        # scores = []
-        # for game in self.scores.split(","):
-        #     team1, team2 = game.split("-")
-        #     scores.append({"team1_score": team1, "team2_score": team2})
         return {
             "match_id": self.match_id,
             "date": self.date,

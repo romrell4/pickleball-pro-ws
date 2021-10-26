@@ -13,9 +13,6 @@ class Test(unittest.TestCase):
         cls.client = FirebaseClientImpl()
 
     def test_validate_token(self):
-        # Test null token
-        self.assertRaises(ValueError, lambda: self.client.get_firebase_user(None))
-
         # Test empty token
         self.assertRaises(ValueError, lambda: self.client.get_firebase_user(""))
 
