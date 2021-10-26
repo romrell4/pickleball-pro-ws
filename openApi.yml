@@ -391,8 +391,8 @@ components:
           format: "int64"
     Match:
       required:
-      - "date"
       - "match_id"
+      - "date"
       - "scores"
       - "team1_player1"
       - "team2_player1"
@@ -402,26 +402,18 @@ components:
           type: "string"
         date:
           type: "string"
-        team1_player1:
-          type: "object"
+        team1:
+          type: "array"
           properties:
             schema:
               $ref: "#/components/schemas/Player"
-        team1_player2:
-          type: "object"
-          properties:
-            schema:
-              $ref: "#/components/schemas/Player"
-        team2_player1:
-          type: "object"
-          properties:
-            schema:
-              $ref: "#/components/schemas/Player"
-        team2_player2:
-          type: "object"
-          properties:
-            schema:
-              $ref: "#/components/schemas/Player"
+        team2:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              schema:
+                $ref: "#/components/schemas/Player"
         scores:
           type: "array"
           items:

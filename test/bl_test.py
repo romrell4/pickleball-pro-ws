@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from bl import ManagerImpl
 from da import Dao
-from domain import *
+from domain.exceptions import ServiceException
 from firebase_client import FirebaseClient
 from test import fixtures
 
@@ -91,9 +91,6 @@ class Test(unittest.TestCase):
         create_player_mock.assert_called_once()
         player = create_player_mock.call_args.args[0]
         self.assertNotEqual(fixtures.player().player_id, player.player_id)
-        # Make sure the owner info is overridden
-        self.assertEqual(fixtures.user().user_id, player.owner_user_id)
-        self.assertFalse(player.is_owner)
 
     def test_update_player(self):
         self.assert_requires_auth(lambda: self.manager.update_player("", fixtures.player()))

@@ -1,8 +1,10 @@
-from typing import List
+from typing import List, Optional
 
 from pymysql.constants import FIELD_TYPE
 
-from domain import *
+from domain.exceptions import ServiceException
+from domain.player import Player
+from domain.user import User
 import pymysql
 import os
 
@@ -62,11 +64,13 @@ class DaoImpl(Dao):
         return self.get_one(Player, "select id, owner_user_id, is_owner, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level from players where id = %s", player_id)
 
     def create_player(self, player: Player) -> Player:
-        self.insert("insert into players (id, owner_user_id, is_owner, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", player.player_id, player.owner_user_id, player.is_owner, player.image_url, player.first_name, player.last_name, player.dominant_hand, player.notes, player.phone_number, player.email, player.level)
+        self.insert("insert into players (id, owner_user_id, is_owner, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    player.player_id, player.owner_user_id, player.is_owner, player.image_url, player.first_name, player.last_name, player.dominant_hand, player.notes, player.phone_number, player.email, player.level)
         return self.get_player(player.player_id)
 
     def update_player(self, player_id: str, player: Player) -> Player:
-        self.execute("update players set image_url = %s, first_name = %s, last_name = %s, dominant_hand = %s, notes = %s, phone_number = %s, email_address = %s, level = %s where id = %s", player.image_url, player.first_name, player.last_name, player.dominant_hand, player.notes, player.phone_number, player.email, player.level, player_id)
+        self.execute("update players set image_url = %s, first_name = %s, last_name = %s, dominant_hand = %s, notes = %s, phone_number = %s, email_address = %s, level = %s where id = %s",
+                     player.image_url, player.first_name, player.last_name, player.dominant_hand, player.notes, player.phone_number, player.email, player.level, player_id)
         return self.get_player(player_id)
 
     def delete_player(self, player_id: str):

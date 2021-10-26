@@ -2,9 +2,12 @@ import datetime
 import json
 
 from bl import ManagerImpl
-from firebase_client import FirebaseClientImpl
+from domain.base import DomainBase
+from domain.exceptions import ServiceException
+from domain.player import Player
+from domain.match import Match
 from da import DaoImpl
-from domain import ServiceException, Player, Codable, Match
+from firebase_client import FirebaseClientImpl
 
 
 def handle(event, _):
@@ -44,15 +47,15 @@ class Handler:
             elif resource == "/players" and method == "GET":
                 response_body = self.manager.get_players()
             elif resource == "/players" and method == "POST":
-                response_body = self.manager.create_player(Player.from_dict(body))
+                response_body = self.manager.create_player(Player.from_dict(body, self.manager.user))
             elif resource == "/players/{id}" and method == "PUT":
-                response_body = self.manager.update_player(path_params["id"], Player.from_dict(body))
+                response_body = self.manager.update_player(path_params["id"], Player.from_dict(body, self.manager.user))
             elif resource == "/players/{id}" and method == "DELETE":
                 response_body = self.manager.delete_player(path_params["id"])
             elif resource == "/matches" and method == "GET":
                 response_body = self.manager.get_matches()
             elif resource == "/matches" and method == "POST":
-                response_body = self.manager.create_match(Match.from_dict(body))
+                response_body = self.manager.create_match(Match.from_dict(body, self.manager.user))
             elif resource == "/matches/{id}" and method == "DELETE":
                 response_body = self.manager.delete_match(path_params["id"])
             else:
@@ -81,7 +84,7 @@ def default_serialize(x):
         return x.isoformat() + "Z"
     elif isinstance(x, datetime.date):
         return x.isoformat()
-    elif isinstance(x, Codable):
+    elif isinstance(x, DomainBase):
         return x.to_dict()
     else:
         return x.__dict__

@@ -4,7 +4,10 @@ from typing import List, Optional, Dict
 from firebase_admin.auth import ExpiredIdTokenError, InvalidIdTokenError
 
 from da import Dao
-from domain import User, ServiceException, Player, Match
+from domain.exceptions import ServiceException
+from domain.match import Match
+from domain.player import Player
+from domain.user import User
 from firebase_client import FirebaseClient
 
 
@@ -51,7 +54,17 @@ class ManagerImpl(Manager):
 
                 self.user = User(user_id=str(uuid.uuid4()), firebase_id=firebase_user["user_id"], first_name=first_name, last_name=last_names, image_url=firebase_user.get("picture"))
                 self.dao.create_user(self.user)
-                self.dao.create_player(Player(player_id=str(uuid.uuid4()), owner_user_id=self.user.user_id, is_owner=True, image_url=self.user.image_url, first_name=self.user.first_name, last_name=self.user.last_name, email=firebase_user.get("email")))
+                self.dao.create_player(
+                    Player(
+                        player_id=str(uuid.uuid4()),
+                        owner_user_id=self.user.user_id,
+                        is_owner=True,
+                        image_url=self.user.image_url,
+                        first_name=self.user.first_name,
+                        last_name=self.user.last_name,
+                        email=firebase_user.get("email")
+                    )
+                )
         except (KeyError, ValueError, InvalidIdTokenError, ExpiredIdTokenError) as e:
             print(e)
             self.user = None
@@ -63,9 +76,6 @@ class ManagerImpl(Manager):
 
     def create_player(self, player: Player) -> Player:
         self.require_auth()
-
-        player.owner_user_id = self.user.user_id
-        player.is_owner = False
 
         player.player_id = str(uuid.uuid4())
         return self.dao.create_player(player)

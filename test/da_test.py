@@ -1,9 +1,10 @@
 import os
 import unittest
 
-from test import properties, fixtures
+from domain.player import Player
+from domain.user import User
+from test import properties
 from da import DaoImpl
-from domain import *
 
 
 class Test(unittest.TestCase):

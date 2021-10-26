@@ -5,11 +5,14 @@ from unittest.mock import patch
 
 import handler
 from bl import Manager
-from domain import User, Player
+from domain.player import Player
+from domain.user import User
 from test import fixtures
 
 
 class Test(unittest.TestCase):
+    manager: Manager
+
     @classmethod
     def setUpClass(cls):
         cls.manager = Manager()
@@ -49,7 +52,8 @@ class Test(unittest.TestCase):
 
         player = create_player_mock.call_args.args[0]
         self.assertIsInstance(player, Player)
-        input_player.owner_user_id = ""
+        input_player.owner_user_id = self.manager.user.user_id
+        input_player.is_owner = False
         self.assertEqual(input_player, player)
 
     def test_update_player(self):
@@ -70,7 +74,8 @@ class Test(unittest.TestCase):
         player_id, player = update_player_mock.call_args.args[0:2]
         self.assertEqual("ID", player_id)
         self.assertIsInstance(player, Player)
-        input_player.owner_user_id = ""
+        input_player.owner_user_id = self.manager.user.user_id
+        input_player.is_owner = False
         self.assertEqual(input_player, player)
 
     def test_delete_player(self):
