@@ -73,7 +73,7 @@ class MatchTest(unittest.TestCase):
 
     def test_from_dict_min_scenario(self):
         min_dict = {
-            "date": "2021-10-26T18:35:12+0000",
+            "date": "2021-10-26T18:35:12Z",
             "team1": [get_player_dict()],
             "team2": [get_player_dict()],
             "scores": [get_score_dict()],
@@ -93,7 +93,7 @@ class MatchTest(unittest.TestCase):
     def test_from_dict_not_enough_players(self):
         with self.assertRaises(DomainException) as e:
             Match.from_dict({
-                "date": "2021-10-26T18:35:12+0000",
+                "date": "2021-10-26T18:35:12Z",
                 "team1": [],
                 "team2": [],
                 "scores": [get_score_dict()],
@@ -219,7 +219,7 @@ def get_stat_dict(): return {
 
 def get_match_dict(): return {
     "match_id": "match_id",
-    "date": "2021-10-26T18:35:12+0000",
+    "date": "2021-10-26T18:35:12Z",
     "team1": [
         get_player_dict(),
         get_player_dict(),
