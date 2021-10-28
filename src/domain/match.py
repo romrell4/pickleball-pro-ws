@@ -69,7 +69,7 @@ class Match(DomainBase):
             return Match(
                 match_id=match_id,
                 user_id=user.user_id,
-                date=datetime.strptime(d["date"], "%Y-%m-%dT%H:%M:%S%z"),
+                date=datetime.strptime(d["date"], "%Y-%m-%dT%H:%M:%S%Z"),
                 team1_player1=Player.from_dict(team1[0], user=user),
                 team1_player2=Player.from_dict(team1[1], user=user) if len(team1) > 1 else None,
                 team2_player1=Player.from_dict(team2[0], user=user),
