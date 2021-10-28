@@ -104,7 +104,7 @@ class MatchTest(unittest.TestCase):
     def test_from_dict_no_scores(self):
         with self.assertRaises(DomainException) as e:
             Match.from_dict({
-                "date": "2021-10-26T18:35:12+0000",
+                "date": "2021-10-26T18:35:12Z",
                 "team1": [get_player_dict()],
                 "team2": [get_player_dict()],
                 "scores": [],
