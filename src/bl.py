@@ -1,11 +1,12 @@
 import uuid
+from datetime import datetime
 from typing import List, Optional, Dict
 
 from firebase_admin.auth import ExpiredIdTokenError, InvalidIdTokenError
 
 from da import Dao
 from domain.exceptions import ServiceException
-from domain.match import Match
+from domain.match import Match, GameScore
 from domain.player import Player
 from domain.user import User
 from firebase_client import FirebaseClient
@@ -107,7 +108,8 @@ class ManagerImpl(Manager):
 
     def get_matches(self) -> List[Match]:
         # TODO: Implement
-        return []
+        players = self.get_players()
+        return [Match("12345", self.user.user_id, datetime.now(), players[0], None, players[1], None, [GameScore(10, 6), GameScore(1, 5)], [])]
 
     def create_match(self) -> Match:
         # TODO: Implement

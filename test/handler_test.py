@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import handler
 from bl import Manager
+from domain.match import Match
 from domain.player import Player
 from domain.user import User
 from test import fixtures
@@ -88,7 +89,11 @@ class Test(unittest.TestCase):
         self.assertEqual("ID", player_id)
 
     def test_get_matches(self):
-        # TODO
+        # TODO: Get this working
+        # with patch.object(self.handler.manager, "get_matches", return_value=[fixtures.match()]):
+        #     response = self.handler.handle(create_event("/matches"))
+        #     self.assertEqual(200, response["statusCode"])
+        #     self.assert_match_json(fixtures.match(), json.loads(response["body"])[0])
         pass
 
     def test_create_match(self):
@@ -111,6 +116,16 @@ class Test(unittest.TestCase):
         self.assertEqual(expected_player.phone_number, json_player["phone_number"])
         self.assertEqual(expected_player.email, json_player["email"])
         self.assertEqual(expected_player.level, json_player["level"])
+
+    def assert_match_json(self, expected_match: Match, json_match: Dict):
+        self.assertEqual(expected_match.match_id, json_match["match_id"])
+        self.assertEqual(expected_match.date.isoformat(), json_match["date"])
+        self.assertEqual(expected_match.team1_player1, json_match["team1"][0])
+        self.assertEqual(expected_match.team1_player2, json_match["team1"][1] if len(json_match["team1"]) > 1 else None)
+        self.assertEqual(expected_match.team2_player1, json_match["team2"][0])
+        self.assertEqual(expected_match.team2_player2, json_match["team2"][1] if len(json_match["team2"]) > 1 else None)
+        self.assertEqual(expected_match.scores, json_match["scores"])
+        self.assertEqual(expected_match.stats, json_match["stats"])
 
 
 def create_event(resource, path_params=None, method="GET", body=None, query_params=None):
