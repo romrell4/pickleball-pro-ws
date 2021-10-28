@@ -82,8 +82,6 @@ def format_response(body=None, status_code=200):
 def default_serialize(x):
     if isinstance(x, datetime.datetime):
         return x.strftime("%Y-%m-%dT%H:%M:%S%z")
-    elif isinstance(x, datetime.date):
-        return x.isoformat()
     elif isinstance(x, DomainBase):
         return x.to_dict()
     else:
