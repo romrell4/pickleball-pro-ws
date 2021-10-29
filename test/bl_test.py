@@ -87,9 +87,7 @@ class Test(unittest.TestCase):
             player = self.manager.create_player(fixtures.player())
             self.assertEqual(fixtures.player(), player)
 
-        create_player_mock.assert_called_once()
-        player = create_player_mock.call_args.args[0]
-        self.assertNotEqual(fixtures.player().player_id, player.player_id)
+        create_player_mock.assert_called_once_with(fixtures.player())
 
     def test_update_player(self):
         self.assert_requires_auth(lambda: self.manager.update_player("", fixtures.player()))
@@ -151,9 +149,7 @@ class Test(unittest.TestCase):
             match = self.manager.create_match(fixtures.match())
             self.assertEqual(fixtures.match(), match)
 
-        create_match_mock.assert_called_once()
-        match = create_match_mock.call_args.args[0]
-        self.assertNotEqual(fixtures.match().match_id, match.match_id)
+        create_match_mock.assert_called_once_with(fixtures.match())
 
     def assert_requires_auth(self, fun: Callable):
         self.manager.user = None

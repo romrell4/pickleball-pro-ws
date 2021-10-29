@@ -90,7 +90,6 @@ class DaoImpl(Dao):
         return self.to_matches(match_dtos)
 
     def create_match(self, match: Match) -> Match:
-        print(match)
         self.conn.autocommit(False)
         try:
             self.execute("insert into matches (id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores) values (%s, %s, %s, %s, %s, %s, %s, %s)",

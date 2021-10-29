@@ -78,7 +78,6 @@ class ManagerImpl(Manager):
     def create_player(self, player: Player) -> Player:
         self.require_auth()
 
-        player.player_id = str(uuid.uuid4())
         return self.dao.create_player(player)
 
     def update_player(self, player_id: str, player: Player) -> Player:
@@ -112,7 +111,6 @@ class ManagerImpl(Manager):
     def create_match(self, match: Match) -> Match:
         self.require_auth()
 
-        match.match_id = str(uuid.uuid4())
         return self.dao.create_match(match)
 
     def require_auth(self):
