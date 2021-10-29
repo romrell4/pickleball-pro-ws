@@ -21,6 +21,14 @@ class GameScore(DomainBase):
         except KeyError as e:
             raise DomainException(f"Missing required key '{e.args[0]}' in request body")
 
+    @classmethod
+    def from_db_str(cls, db_str: str):
+        scores = db_str.split("-")
+        return GameScore(team1_score=int(scores[0]), team2_score=int(scores[1]))
+
+    def to_db_str(self) -> str:
+        return f"{self.team1_score}-{self.team2_score}"
+
 
 @dataclass
 class Stat(DomainBase):
@@ -29,7 +37,7 @@ class Stat(DomainBase):
     game_index: int
     shot_result: str
     shot_type: str
-    shot_side: str
+    shot_side: Optional[str]
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any], user: User):
@@ -50,6 +58,9 @@ class Match(DomainBase):
     team2_player2: Optional[Player]
     scores: List[GameScore]
     stats: List[Stat]
+
+    def scores_db_str(self):
+        return ",".join([score.to_db_str() for score in self.scores])
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any], user: User):

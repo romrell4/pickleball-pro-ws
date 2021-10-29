@@ -1,4 +1,5 @@
 import itertools
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Dict
@@ -32,6 +33,8 @@ class Dao:
 
     def get_matches(self, user_id: str) -> List[Match]: pass
 
+    def create_match(self, match: Match) -> Match: pass
+
 
 class DaoImpl(Dao):
     def __init__(self):
@@ -61,7 +64,7 @@ class DaoImpl(Dao):
         return self.get_one(User, "select id, firebase_id, first_name, last_name, image_url from users where firebase_id = %s", firebase_id)
 
     def create_user(self, user: User):
-        self.insert("insert into users (id, firebase_id, first_name, last_name, image_url) values (%s, %s, %s, %s, %s)", user.user_id, user.firebase_id, user.first_name, user.last_name, user.image_url)
+        self.execute("insert into users (id, firebase_id, first_name, last_name, image_url) values (%s, %s, %s, %s, %s)", user.user_id, user.firebase_id, user.first_name, user.last_name, user.image_url)
 
     def get_players(self, owner_user_id: str) -> List[Player]:
         return self.get_list(Player, "select id, owner_user_id, is_owner, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level from players where owner_user_id = %s", owner_user_id)
@@ -70,8 +73,8 @@ class DaoImpl(Dao):
         return self.get_one(Player, "select id, owner_user_id, is_owner, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level from players where id = %s", player_id)
 
     def create_player(self, player: Player) -> Player:
-        self.insert("insert into players (id, owner_user_id, is_owner, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                    player.player_id, player.owner_user_id, player.is_owner, player.image_url, player.first_name, player.last_name, player.dominant_hand, player.notes, player.phone_number, player.email, player.level)
+        self.execute("insert into players (id, owner_user_id, is_owner, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                     player.player_id, player.owner_user_id, player.is_owner, player.image_url, player.first_name, player.last_name, player.dominant_hand, player.notes, player.phone_number, player.email, player.level)
         return self.get_player(player.player_id)
 
     def update_player(self, player_id: str, player: Player) -> Player:
@@ -84,16 +87,35 @@ class DaoImpl(Dao):
 
     def get_matches(self, user_id: str) -> List[Match]:
         match_dtos = self.get_list(MatchDbDto, "select id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores from matches where user_id = %s", user_id)
+        return self.to_matches(match_dtos)
+
+    def create_match(self, match: Match) -> Match:
+        self.execute("insert into matches (id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores) values (%s, %s, %s, %s, %s, %s, %s, %s)",
+                     match.match_id, match.user_id, match.date, match.team1_player1.player_id, match.team1_player2.player_id if match.team1_player2 is not None else None, match.team2_player1.player_id, match.team2_player2.player_id if match.team2_player2 is not None else None, match.scores_db_str())
+        if len(match.stats) > 0:
+            stats_params = [[str(uuid.uuid4()), match.user_id, stat.match_id, stat.player_id, stat.game_index, stat.shot_result, stat.shot_type, stat.shot_side] for stat in match.stats]
+            self.execute_many("insert into stats (id, user_id, match_id, player_id, game_index, shot_result, shot_type, shot_side) values (%s, %s, %s, %s, %s, %s, %s, %s)", *stats_params)
+        return self.get_match(match.match_id)
+
+    # Private functions
+
+    def get_match(self, match_id: str) -> Match:
+        match_dtos = self.get_list(MatchDbDto, "select id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores from matches where id = %s", match_id)
+        return self.to_matches(match_dtos)[0]
+
+    def get_stats(self, user_id: str) -> List[Stat]:
+        return self.get_list(Stat, "select match_id, player_id, game_index, shot_result, shot_type, shot_side from stats where user_id = %s order by match_id", user_id)
+
+    def to_matches(self, match_dtos: List) -> List[Match]:
+        if len(match_dtos) == 0:
+            return []
+
+        user_id = match_dtos[0].user_id
         players = {k: list(v) for k, v in itertools.groupby(self.get_players(user_id), lambda player: player.player_id)}
         stats = {k: list(v) for k, v in itertools.groupby(self.get_stats(user_id), lambda stat: stat.match_id)}
 
-        matches = []
-        for dto in match_dtos:
-            scores = []
-            for game in dto.scores.split(","):
-                game_scores = game.split("-")
-                scores.append(GameScore(team1_score=int(game_scores[0]), team2_score=int(game_scores[1])))
-            matches.append(Match(
+        return [
+            Match(
                 match_id=dto.match_id,
                 user_id=dto.user_id,
                 date=dto.date,
@@ -101,15 +123,13 @@ class DaoImpl(Dao):
                 team1_player2=players[dto.team1_player2_id][0] if dto.team1_player2_id is not None else None,
                 team2_player1=players[dto.team2_player1_id][0],
                 team2_player2=players[dto.team2_player2_id][0] if dto.team2_player2_id is not None else None,
-                scores=scores,
+                scores=[GameScore.from_db_str(game) for game in dto.scores.split(",")],
                 stats=stats.get(dto.match_id, [])
-            ))
-        return matches
+            )
+            for dto in match_dtos
+        ]
 
-    def get_stats(self, user_id: str) -> List[Stat]:
-        return self.get_list(Stat, "select match_id, player_id, game_index, shot_result, shot_type, shot_side from stats where user_id = %s order by match_id", user_id)
-
-    ### UTILS ###
+    # UTILS
 
     def get_list(self, klass, sql, *args):
         try:
@@ -135,23 +155,22 @@ class DaoImpl(Dao):
             print(e)
             raise ServiceException("Error getting data from database")
 
-    def insert(self, sql, *args):
-        try:
-            with self.conn.cursor() as cur:
-                cur.execute(sql, args)
-                return cur.lastrowid
-        except Exception as e:
-            print(e)
-            raise ServiceException("Error inserting data into database")
-
     def execute(self, sql, *args):
         try:
             with self.conn.cursor() as cur:
-                affected_rows = cur.execute(sql, args)
-                print(sql, args, affected_rows)
+                cur.execute(sql, args)
         except Exception as e:
             print(e)
             raise ServiceException("Error executing database command")
+
+    def execute_many(self, sql, *args):
+        try:
+            with self.conn.cursor() as cur:
+                cur.executemany(sql, args)
+        except Exception as e:
+            print(e)
+            raise ServiceException("Error executing database command")
+
 
 @dataclass
 class MatchDbDto:
@@ -163,21 +182,3 @@ class MatchDbDto:
     team2_player1_id: str
     team2_player2_id: str
     scores: str
-
-    def match(self, players: Dict[str, Player]):
-        scores = []
-        for game in self.scores.split(","):
-            game_scores = game.split("-")
-            scores.append(GameScore(team1_score=int(game_scores[0]), team2_score=int(game_scores[1])))
-        return Match(
-            match_id=self.match_id,
-            user_id=self.user_id,
-            date=self.date,
-            team1_player1=players[self.team1_player1_id],
-            team1_player2=players[self.team1_player2_id] if self.team1_player2_id is not None else None,
-            team2_player1=players[self.team2_player1_id],
-            team2_player2=players[self.team2_player2_id] if self.team2_player2_id is not None else None,
-            scores=scores,
-            stats=[]
-        )
-
