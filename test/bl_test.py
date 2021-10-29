@@ -147,6 +147,13 @@ class Test(unittest.TestCase):
                 self.assertEqual({}, result)
             delete_player_mock.assert_called_once_with("")
 
+    def test_get_matches(self):
+        self.assert_requires_auth(lambda: self.manager.get_players())
+
+        with patch.object(self.manager.dao, "get_matches", return_value=[fixtures.match()]):
+            matches = self.manager.get_matches()
+            self.assertEqual([fixtures.match()], matches)
+
     def assert_requires_auth(self, fun: Callable):
         self.manager.user = None
         with self.assertRaises(ServiceException) as e:

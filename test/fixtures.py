@@ -33,6 +33,7 @@ def score(): return GameScore(team1_score=1, team2_score=2)
 
 
 def stat(): return Stat(
+    match_id="match_id",
     player_id="player_id",
     game_index=0,
     shot_result="WINNER",

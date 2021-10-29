@@ -163,6 +163,7 @@ class GameScoreTest(unittest.TestCase):
 class StatTest(unittest.TestCase):
     def test_from_dict_max_scenario(self):
         stat = Stat.from_dict(get_stat_dict(), fixtures.user())
+        self.assertEqual("match_id", stat.match_id)
         self.assertEqual("player_id", stat.player_id)
         self.assertEqual(0, stat.game_index)
         self.assertEqual("shot_result", stat.shot_result)
@@ -209,6 +210,7 @@ def get_score_dict(): return {
 
 
 def get_stat_dict(): return {
+    "match_id": "match_id",
     "player_id": "player_id",
     "game_index": 0,
     "shot_result": "shot_result",

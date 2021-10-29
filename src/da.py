@@ -1,8 +1,12 @@
-from typing import List, Optional
+import itertools
+from dataclasses import dataclass
+from datetime import datetime
+from typing import List, Optional, Dict
 
 from pymysql.constants import FIELD_TYPE
 
 from domain.exceptions import ServiceException
+from domain.match import Match, GameScore, Stat
 from domain.player import Player
 from domain.user import User
 import pymysql
@@ -25,6 +29,8 @@ class Dao:
     def update_player(self, player_id: str, player: Player) -> Player: pass
 
     def delete_player(self, player_id: str): pass
+
+    def get_matches(self, user_id: str) -> List[Match]: pass
 
 
 class DaoImpl(Dao):
@@ -76,6 +82,33 @@ class DaoImpl(Dao):
     def delete_player(self, player_id: str):
         self.execute("delete from players where id = %s", player_id)
 
+    def get_matches(self, user_id: str) -> List[Match]:
+        match_dtos = self.get_list(MatchDbDto, "select id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores from matches where user_id = %s", user_id)
+        players = {k: list(v) for k, v in itertools.groupby(self.get_players(user_id), lambda player: player.player_id)}
+        stats = {k: list(v) for k, v in itertools.groupby(self.get_stats(user_id), lambda stat: stat.match_id)}
+
+        matches = []
+        for dto in match_dtos:
+            scores = []
+            for game in dto.scores.split(","):
+                game_scores = game.split("-")
+                scores.append(GameScore(team1_score=int(game_scores[0]), team2_score=int(game_scores[1])))
+            matches.append(Match(
+                match_id=dto.match_id,
+                user_id=dto.user_id,
+                date=dto.date,
+                team1_player1=players[dto.team1_player1_id][0],
+                team1_player2=players[dto.team1_player2_id][0] if dto.team1_player2_id is not None else None,
+                team2_player1=players[dto.team2_player1_id][0],
+                team2_player2=players[dto.team2_player2_id][0] if dto.team2_player2_id is not None else None,
+                scores=scores,
+                stats=stats.get(dto.match_id, [])
+            ))
+        return matches
+
+    def get_stats(self, user_id: str) -> List[Stat]:
+        return self.get_list(Stat, "select match_id, player_id, game_index, shot_result, shot_type, shot_side from stats where user_id = %s order by match_id", user_id)
+
     ### UTILS ###
 
     def get_list(self, klass, sql, *args):
@@ -119,3 +152,32 @@ class DaoImpl(Dao):
         except Exception as e:
             print(e)
             raise ServiceException("Error executing database command")
+
+@dataclass
+class MatchDbDto:
+    match_id: str
+    user_id: str
+    date: datetime
+    team1_player1_id: str
+    team1_player2_id: str
+    team2_player1_id: str
+    team2_player2_id: str
+    scores: str
+
+    def match(self, players: Dict[str, Player]):
+        scores = []
+        for game in self.scores.split(","):
+            game_scores = game.split("-")
+            scores.append(GameScore(team1_score=int(game_scores[0]), team2_score=int(game_scores[1])))
+        return Match(
+            match_id=self.match_id,
+            user_id=self.user_id,
+            date=self.date,
+            team1_player1=players[self.team1_player1_id],
+            team1_player2=players[self.team1_player2_id] if self.team1_player2_id is not None else None,
+            team2_player1=players[self.team2_player1_id],
+            team2_player2=players[self.team2_player2_id] if self.team2_player2_id is not None else None,
+            scores=scores,
+            stats=[]
+        )
+

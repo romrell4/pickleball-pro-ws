@@ -24,6 +24,7 @@ class GameScore(DomainBase):
 
 @dataclass
 class Stat(DomainBase):
+    match_id: str
     player_id: str
     game_index: int
     shot_result: str
@@ -33,7 +34,7 @@ class Stat(DomainBase):
     @classmethod
     def from_dict(cls, d: Dict[str, Any], user: User):
         try:
-            return Stat(d["player_id"], d["game_index"], d["shot_result"], d["shot_type"], d.get("shot_side"))
+            return Stat(d["match_id"], d["player_id"], d["game_index"], d["shot_result"], d["shot_type"], d.get("shot_side"))
         except KeyError as e:
             raise DomainException(f"Missing required key '{e.args[0]}' in request body")
 

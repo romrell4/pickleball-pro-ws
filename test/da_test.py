@@ -1,5 +1,6 @@
 import os
 import unittest
+from datetime import datetime
 
 from domain.player import Player
 from domain.user import User
@@ -28,7 +29,18 @@ class Test(unittest.TestCase):
                 ('TEST4', 'fb4', 'Tester', 'Four', 'test4.jpg')
             """)
             self.dao.insert("""insert into players (id, owner_user_id, is_owner, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level) values 
-                ('1', 'TEST1', True, 'image.jpg', 'first', 'last', 'LEFT', 'notes', 'phone', 'email', 5.2)
+                ('player1', 'TEST1', True, 'image.jpg', 'first', 'last', 'LEFT', 'notes', 'phone', 'email', 5.2),
+                ('player2', 'TEST1', True, 'image.jpg', 'first', 'last', 'LEFT', 'notes', 'phone', 'email', 5.2),
+                ('player3', 'TEST1', True, 'image.jpg', 'first', 'last', 'LEFT', 'notes', 'phone', 'email', 5.2),
+                ('player4', 'TEST1', True, 'image.jpg', 'first', 'last', 'LEFT', 'notes', 'phone', 'email', 5.2)
+            """)
+            self.dao.insert("""insert into matches (id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores) values 
+                ('match1', 'TEST1', '2020-01-01 00:00:01', 'player1', null, 'player2', null, '10-1'),
+                ('match2', 'TEST1', '2020-01-01 00:00:01', 'player1', 'player2', 'player3', 'player4', '10-1,2-10')
+            """)
+            self.dao.insert("""insert into stats (id, user_id, match_id, player_id, game_index, shot_result, shot_type, shot_side) values 
+                ('stat1', 'TEST1', 'match1', 'player1', 0, 'WINNER', 'DROP', 'FOREHAND'),
+                ('stat2', 'TEST1', 'match1', 'player1', 0, 'ERROR', 'SERVE', null)
             """)
         except:
             self.tearDown()
@@ -77,10 +89,10 @@ class Test(unittest.TestCase):
         self.assertEqual(0, len(players))
 
         players = self.dao.get_players("TEST1")
-        self.assertEqual(1, len(players))
+        self.assertEqual(4, len(players))
 
     def test_get_player(self):
-        player = self.dao.get_player("1")
+        player = self.dao.get_player("player1")
         self.assertIsNotNone(player)
 
     def test_create_player(self):
@@ -116,9 +128,9 @@ class Test(unittest.TestCase):
         self.assertIsNone(player.level)
 
     def test_update_player(self):
-        player = self.dao.update_player("1", Player("new_player_id", "new_owner_user_id", False, "new_image_url", "new_first", "new_last", "RIGHT", "new_notes", "new_phone", "new_email", 1.23))
+        player = self.dao.update_player("player1", Player("new_player_id", "new_owner_user_id", False, "new_image_url", "new_first", "new_last", "RIGHT", "new_notes", "new_phone", "new_email", 1.23))
         # You can't change the id or owner info
-        self.assertEqual("1", player.player_id)
+        self.assertEqual("player1", player.player_id)
         self.assertEqual("TEST1", player.owner_user_id)
         self.assertTrue(player.is_owner)
         # These can be changed
@@ -133,5 +145,46 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(1.2, player.level)
 
     def test_delete_player(self):
-        self.dao.delete_player("1")
-        self.assertIsNone(self.dao.get_player("1"))
+        self.dao.delete_player("player1")
+        self.assertIsNone(self.dao.get_player("player1"))
+
+    def test_get_matches(self):
+        matches = self.dao.get_matches("TEST1")
+        self.assertEqual(2, len(matches))
+        match = [m for m in matches if m.match_id == "match1"][0]
+        self.assertEqual("match1", match.match_id)
+        self.assertEqual("TEST1", match.user_id)
+        self.assertEqual(datetime(2020, 1, 1, 0, 0, 1), match.date)
+        self.assertEqual("player1", match.team1_player1.player_id)
+        self.assertIsNone(match.team1_player2)
+        self.assertEqual("player2", match.team2_player1.player_id)
+        self.assertIsNone(match.team2_player2)
+        self.assertEqual(1, len(match.scores))
+        score = match.scores[0]
+        self.assertEqual(10, score.team1_score)
+        self.assertEqual(1, score.team2_score)
+        self.assertEqual(2, len(match.stats))
+        stat = match.stats[0]
+        self.assertEqual("match1", stat.match_id)
+        self.assertEqual("player1", stat.player_id)
+        self.assertEqual(0, stat.game_index)
+        self.assertEqual("WINNER", stat.shot_result)
+        self.assertEqual("DROP", stat.shot_type)
+        self.assertEqual("FOREHAND", stat.shot_side)
+        stat = match.stats[1]
+        self.assertIsNone(stat.shot_side)
+
+        match = [m for m in matches if m.match_id == "match2"][0]
+        self.assertEqual("player1", match.team1_player1.player_id)
+        self.assertEqual("player2", match.team1_player2.player_id)
+        self.assertEqual("player3", match.team2_player1.player_id)
+        self.assertEqual("player4", match.team2_player2.player_id)
+        self.assertEqual(2, len(match.scores))
+        score = match.scores[0]
+        self.assertEqual(10, score.team1_score)
+        self.assertEqual(1, score.team2_score)
+        score = match.scores[1]
+        self.assertEqual(2, score.team1_score)
+        self.assertEqual(10, score.team2_score)
+        self.assertEqual(0, len(match.stats))
+

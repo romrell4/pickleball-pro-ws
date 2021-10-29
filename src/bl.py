@@ -107,9 +107,9 @@ class ManagerImpl(Manager):
         return {}
 
     def get_matches(self) -> List[Match]:
-        # TODO: Implement
-        players = self.get_players()
-        return [Match("12345", self.user.user_id, datetime.now(), players[0], None, players[1], None, [GameScore(10, 6), GameScore(1, 5)], [])]
+        self.require_auth()
+
+        return self.dao.get_matches(self.user.user_id)
 
     def create_match(self) -> Match:
         # TODO: Implement
