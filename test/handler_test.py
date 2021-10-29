@@ -12,13 +12,12 @@ from test import fixtures
 
 
 class Test(unittest.TestCase):
-    manager: Manager
 
     @classmethod
     def setUpClass(cls):
-        cls.manager = Manager()
-        cls.manager.user = User("1", "fb1", "First", "Last", "hello.jpg")
-        cls.handler = handler.Handler(cls.manager)
+        manager = Manager()
+        manager.user = User("1", "fb1", "First", "Last", "hello.jpg")
+        cls.handler = handler.Handler(manager)
 
     def test_login_user(self):
         response = self.handler.handle(create_event("/users", method="POST"))
@@ -37,56 +36,29 @@ class Test(unittest.TestCase):
             self.assert_player_json(fixtures.player(), json.loads(response["body"])[0])
 
     def test_create_player(self):
-        response = self.handler.handle(create_event("/players", method="POST", body="{}"))
-        self.assertEqual(400, response["statusCode"])
-        error = json.loads(response["body"])
-        self.assertEqual("Missing required key 'first_name' in request body", error["error"])
-
-        # Not having an owner_user_id should still pass
-        input_player = fixtures.player()
-        input_player_dict = input_player.to_dict()
-        input_player_dict.pop("owner_user_id")
         with patch.object(self.handler.manager, "create_player", return_value=fixtures.player()) as create_player_mock:
-            response = self.handler.handle(create_event("/players", method="POST", body=json.dumps(input_player_dict)))
-            self.assertEqual(200, response["statusCode"])
-            self.assert_player_json(fixtures.player(), json.loads(response["body"]))
-
-        player = create_player_mock.call_args.args[0]
-        self.assertIsInstance(player, Player)
-        input_player.owner_user_id = self.manager.user.user_id
-        input_player.is_owner = False
-        self.assertEqual(input_player, player)
+            with patch.object(Player, "from_dict", return_value=fixtures.player()) as from_dict_mock:
+                response = self.handler.handle(create_event("/players", method="POST", body="{}"))
+                self.assertEqual(200, response["statusCode"])
+                self.assert_player_json(fixtures.player(), json.loads(response["body"]))
+            from_dict_mock.assert_called_once_with({}, self.handler.manager.user)
+        create_player_mock.assert_called_once_with(fixtures.player())
 
     def test_update_player(self):
-        response = self.handler.handle(create_event("/players/{id}", method="PUT", path_params={"id": "ID"}, body="{}"))
-        self.assertEqual(400, response["statusCode"])
-        error = json.loads(response["body"])
-        self.assertEqual("Missing required key 'first_name' in request body", error["error"])
-
-        # Not having an owner_user_id should still pass
-        input_player = fixtures.player()
-        input_player_dict = input_player.to_dict()
-        input_player_dict.pop("owner_user_id")
         with patch.object(self.handler.manager, "update_player", return_value=fixtures.player()) as update_player_mock:
-            response = self.handler.handle(create_event("/players/{id}", method="PUT", path_params={"id": "ID"}, body=json.dumps(input_player_dict)))
-            self.assertEqual(200, response["statusCode"])
-            self.assert_player_json(fixtures.player(), json.loads(response["body"]))
-
-        player_id, player = update_player_mock.call_args.args[0:2]
-        self.assertEqual("ID", player_id)
-        self.assertIsInstance(player, Player)
-        input_player.owner_user_id = self.manager.user.user_id
-        input_player.is_owner = False
-        self.assertEqual(input_player, player)
+            with patch.object(Player, "from_dict", return_value=fixtures.player()) as from_dict_mock:
+                response = self.handler.handle(create_event("/players/{id}", method="PUT", path_params={"id": "ID"}, body="{}"))
+                self.assertEqual(200, response["statusCode"])
+                self.assert_player_json(fixtures.player(), json.loads(response["body"]))
+            from_dict_mock.assert_called_once_with({}, self.handler.manager.user)
+        update_player_mock.assert_called_once_with("ID", fixtures.player())
 
     def test_delete_player(self):
         with patch.object(self.handler.manager, "delete_player", return_value={}) as delete_player_mock:
             response = self.handler.handle(create_event("/players/{id}", method="DELETE", path_params={"id": "ID"}))
             self.assertEqual(200, response["statusCode"])
             self.assertEqual({}, json.loads(response["body"]))
-
-        player_id = delete_player_mock.call_args.args[0]
-        self.assertEqual("ID", player_id)
+        delete_player_mock.assert_called_once_with("ID")
 
     def test_get_matches(self):
         with patch.object(self.handler.manager, "get_matches", return_value=[fixtures.match()]):
@@ -95,12 +67,13 @@ class Test(unittest.TestCase):
             self.assert_match_json(fixtures.match(), json.loads(response["body"])[0])
 
     def test_create_match(self):
-        # TODO
-        pass
-
-    def test_delete_match(self):
-        # TODO
-        pass
+        with patch.object(self.handler.manager, "create_match", return_value=fixtures.match()) as create_match_mock:
+            with patch.object(Match, "from_dict", return_value=fixtures.match()) as from_dict_mock:
+                response = self.handler.handle(create_event("/matches", method="POST", body="{}"))
+                self.assertEqual(200, response["statusCode"])
+                self.assert_match_json(fixtures.match(), json.loads(response["body"]))
+            from_dict_mock.assert_called_once_with({}, self.handler.manager.user)
+        create_match_mock.assert_called_once_with(fixtures.match())
 
     def assert_player_json(self, expected_player: Player, json_player: Dict):
         self.assertEqual(expected_player.player_id, json_player["player_id"])

@@ -29,7 +29,7 @@ class Manager:
 
     def get_matches(self) -> List[Match]: pass
 
-    def create_match(self) -> Match: pass
+    def create_match(self, match: Match) -> Match: pass
 
     def delete_match(self, match_id: str) -> Dict: pass
 
@@ -87,8 +87,6 @@ class ManagerImpl(Manager):
         current_player = self.dao.get_player(player_id)
         if current_player is None:
             raise ServiceException("Player not found", 404)
-        elif current_player.owner_user_id != self.user.user_id:
-            raise ServiceException("You cannot update a player you don't own.", 403)
 
         return self.dao.update_player(player_id, player)
 
@@ -111,9 +109,11 @@ class ManagerImpl(Manager):
 
         return self.dao.get_matches(self.user.user_id)
 
-    def create_match(self) -> Match:
-        # TODO: Implement
-        pass
+    def create_match(self, match: Match) -> Match:
+        self.require_auth()
+
+        match.match_id = str(uuid.uuid4())
+        return self.dao.create_match(match)
 
     def delete_match(self, match_id: str) -> Dict:
         # TODO: Implement

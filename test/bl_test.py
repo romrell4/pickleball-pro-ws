@@ -83,9 +83,8 @@ class Test(unittest.TestCase):
     def test_create_player(self):
         self.assert_requires_auth(lambda: self.manager.create_player(fixtures.player()))
 
-        test_player = fixtures.player()
         with patch.object(self.manager.dao, "create_player", return_value=fixtures.player()) as create_player_mock:
-            player = self.manager.create_player(test_player)
+            player = self.manager.create_player(fixtures.player())
             self.assertEqual(fixtures.player(), player)
 
         create_player_mock.assert_called_once()
@@ -101,20 +100,11 @@ class Test(unittest.TestCase):
             self.assertEqual(404, e.exception.status_code)
             get_player_mock.assert_called_once_with("")
 
-        not_your_player = fixtures.player()
-        not_your_player.owner_user_id = "not you"
-        with patch.object(self.manager.dao, "get_player", return_value=not_your_player):
-            with self.assertRaises(ServiceException) as e:
-                self.manager.update_player("", fixtures.player())
-            self.assertEqual(403, e.exception.status_code)
-
-        your_player = fixtures.player()
-        your_player.owner_user_id = self.manager.user.user_id
-        with patch.object(self.manager.dao, "get_player", return_value=your_player):
+        with patch.object(self.manager.dao, "get_player", return_value=fixtures.player()):
             with patch.object(self.manager.dao, "update_player", return_value=fixtures.player()) as update_player_mock:
-                result = self.manager.update_player("", your_player)
+                result = self.manager.update_player("", fixtures.player())
                 self.assertEqual(fixtures.player(), result)
-            update_player_mock.assert_called_once_with("", your_player)
+            update_player_mock.assert_called_once_with("", fixtures.player())
 
     def test_delete_player(self):
         self.assert_requires_auth(lambda: self.manager.delete_player(""))
@@ -153,6 +143,17 @@ class Test(unittest.TestCase):
         with patch.object(self.manager.dao, "get_matches", return_value=[fixtures.match()]):
             matches = self.manager.get_matches()
             self.assertEqual([fixtures.match()], matches)
+
+    def test_create_match(self):
+        self.assert_requires_auth(lambda: self.manager.create_match(fixtures.match()))
+
+        with patch.object(self.manager.dao, "create_match", return_value=fixtures.match()) as create_match_mock:
+            match = self.manager.create_match(fixtures.match())
+            self.assertEqual(fixtures.match(), match)
+
+        create_match_mock.assert_called_once()
+        match = create_match_mock.call_args.args[0]
+        self.assertNotEqual(fixtures.match().match_id, match.match_id)
 
     def assert_requires_auth(self, fun: Callable):
         self.manager.user = None
