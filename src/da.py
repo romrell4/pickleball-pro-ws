@@ -69,7 +69,7 @@ class DaoImpl(Dao):
     def get_players(self, owner_user_id: str) -> List[Player]:
         return self.get_list(Player, "select id, owner_user_id, is_owner, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level from players where owner_user_id = %s", owner_user_id)
 
-    def get_player(self, player_id: str) -> Player:
+    def get_player(self, player_id: str) -> Optional[Player]:
         return self.get_one(Player, "select id, owner_user_id, is_owner, image_url, first_name, last_name, dominant_hand, notes, phone_number, email_address, level from players where id = %s", player_id)
 
     def create_player(self, player: Player) -> Player:
@@ -90,21 +90,29 @@ class DaoImpl(Dao):
         return self.to_matches(match_dtos)
 
     def create_match(self, match: Match) -> Match:
-        self.execute("insert into matches (id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores) values (%s, %s, %s, %s, %s, %s, %s, %s)",
-                     match.match_id, match.user_id, match.date, match.team1_player1.player_id, match.team1_player2.player_id if match.team1_player2 is not None else None, match.team2_player1.player_id, match.team2_player2.player_id if match.team2_player2 is not None else None, match.scores_db_str())
-        if len(match.stats) > 0:
-            stats_params = [[str(uuid.uuid4()), match.user_id, stat.match_id, stat.player_id, stat.game_index, stat.shot_result, stat.shot_type, stat.shot_side] for stat in match.stats]
-            self.execute_many("insert into stats (id, user_id, match_id, player_id, game_index, shot_result, shot_type, shot_side) values (%s, %s, %s, %s, %s, %s, %s, %s)", *stats_params)
+        self.conn.autocommit(False)
+        try:
+            self.execute("insert into matches (id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores) values (%s, %s, %s, %s, %s, %s, %s, %s)",
+                         match.match_id, match.user_id, match.date, match.team1_player1.player_id, match.team1_player2.player_id if match.team1_player2 is not None else None, match.team2_player1.player_id, match.team2_player2.player_id if match.team2_player2 is not None else None, match.scores_db_str())
+            if len(match.stats) > 0:
+                stats_params = [[match.user_id, stat.match_id, stat.player_id, stat.game_index, stat.shot_result, stat.shot_type, stat.shot_side] for stat in match.stats]
+                self.execute_many("insert into stats (user_id, match_id, player_id, game_index, shot_result, shot_type, shot_side) values (%s, %s, %s, %s, %s, %s, %s)", *stats_params)
+            self.conn.commit()
+        except ServiceException as e:
+            self.conn.rollback()
+            raise e
+        finally:
+            self.conn.autocommit(True)
         return self.get_match(match.match_id)
 
     # Private functions
 
-    def get_match(self, match_id: str) -> Match:
-        match_dtos = self.get_list(MatchDbDto, "select id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores from matches where id = %s", match_id)
-        return self.to_matches(match_dtos)[0]
+    def get_match(self, match_id: str) -> Optional[Match]:
+        match_dto = self.get_one(MatchDbDto, "select id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores from matches where id = %s", match_id)
+        return self.to_matches([match_dto])[0] if match_dto is not None else None
 
     def get_stats(self, user_id: str) -> List[Stat]:
-        return self.get_list(Stat, "select match_id, player_id, game_index, shot_result, shot_type, shot_side from stats where user_id = %s order by match_id", user_id)
+        return self.get_list(Stat, "select match_id, player_id, game_index, shot_result, shot_type, shot_side from stats where user_id = %s order by match_id, id", user_id)
 
     def to_matches(self, match_dtos: List) -> List[Match]:
         if len(match_dtos) == 0:

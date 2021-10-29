@@ -115,10 +115,6 @@ class ManagerImpl(Manager):
         match.match_id = str(uuid.uuid4())
         return self.dao.create_match(match)
 
-    def delete_match(self, match_id: str) -> Dict:
-        # TODO: Implement
-        pass
-
     def require_auth(self):
         if self.user is None:
             raise ServiceException("Unable to authenticate", 401)

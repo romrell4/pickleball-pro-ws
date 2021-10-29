@@ -15,7 +15,7 @@ class GameScore(DomainBase):
     team2_score: int
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any], user: User):
+    def from_dict(cls, d: Dict[str, Any]):
         try:
             return GameScore(d["team1_score"], d["team2_score"])
         except KeyError as e:
@@ -40,9 +40,9 @@ class Stat(DomainBase):
     shot_side: Optional[str]
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any], user: User):
+    def from_dict(cls, d: Dict[str, Any], match_id: str):
         try:
-            return Stat(d["match_id"], d["player_id"], d["game_index"], d["shot_result"], d["shot_type"], d.get("shot_side"))
+            return Stat(match_id, d["player_id"], d["game_index"], d["shot_result"], d["shot_type"], d.get("shot_side"))
         except KeyError as e:
             raise DomainException(f"Missing required key '{e.args[0]}' in request body")
 
@@ -73,10 +73,10 @@ class Match(DomainBase):
             if len(team1) == 0 or len(team2) == 0:
                 raise DomainException("Not enough players provided in each team")
 
-            scores = [GameScore.from_dict(score, user) for score in d["scores"]]
+            scores = [GameScore.from_dict(score) for score in d["scores"]]
             if len(scores) == 0:
                 raise DomainException("No scores in the request body. A match must consist of at least one game")
-            stats = [Stat.from_dict(stat, user) for stat in d.get("stats", [])]
+            stats = [Stat.from_dict(stat, match_id) for stat in d.get("stats", [])]
 
             return Match(
                 match_id=match_id,

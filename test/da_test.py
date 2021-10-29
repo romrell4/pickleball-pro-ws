@@ -2,6 +2,7 @@ import os
 import unittest
 from datetime import datetime
 
+from domain.exceptions import ServiceException
 from domain.match import Match, GameScore, Stat
 from domain.player import Player
 from domain.user import User
@@ -279,3 +280,35 @@ class Test(unittest.TestCase):
         self.assertEqual(0, score.team1_score)
         self.assertEqual(1, score.team2_score)
         self.assertEqual(0, len(match.stats))
+
+        # If stats fail, everything rolls back
+        with self.assertRaises(ServiceException):
+            self.dao.create_match(Match(
+                match_id="-2",
+                user_id="TEST1",
+                date=datetime(2020, 1, 1, 2, 3, 4),
+                team1_player1=p1,
+                team1_player2=p2,
+                team2_player1=p3,
+                team2_player2=p4,
+                scores=[GameScore(10, 4), GameScore(2, 0)],
+                stats=[
+                    Stat(
+                        match_id="0",
+                        player_id=p1.player_id,
+                        game_index=0,
+                        shot_result="ERROR",
+                        shot_type="OVERHEAD",
+                        shot_side="BACKHAND"
+                    ),
+                    Stat(
+                        match_id="0",
+                        player_id="bad player",
+                        game_index=1,
+                        shot_result="WINNER",
+                        shot_type="SERVE",
+                        shot_side=None
+                    )
+                ]
+            ))
+        self.assertIsNone(self.dao.get_match("-2"))
