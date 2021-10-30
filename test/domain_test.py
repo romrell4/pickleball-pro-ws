@@ -162,7 +162,7 @@ class GameScoreTest(unittest.TestCase):
 
 class StatTest(unittest.TestCase):
     def test_from_dict_max_scenario(self):
-        stat = Stat.from_dict(get_stat_dict(), "match_id")
+        stat = Stat.from_dict(get_stat_dict())
         self.assertEqual("match_id", stat.match_id)
         self.assertEqual("player_id", stat.player_id)
         self.assertEqual(0, stat.game_index)
@@ -172,8 +172,10 @@ class StatTest(unittest.TestCase):
 
     def test_from_dict_min_scenario(self):
         d = get_stat_dict()
+        d.pop("match_id")
         d.pop("shot_side")
-        stat = Stat.from_dict(d, "")
+        stat = Stat.from_dict(d)
+        self.assertIsNone(stat.match_id)
         self.assertIsNone(stat.shot_side)
 
     def test_from_dict_missing_required_keys(self):
@@ -181,7 +183,7 @@ class StatTest(unittest.TestCase):
             tmp_dict = get_stat_dict()
             tmp_dict.pop(key)
             with self.assertRaises(DomainException) as e:
-                Stat.from_dict(tmp_dict, "")
+                Stat.from_dict(tmp_dict)
             self.assertEqual(f"Missing required key '{key}' in request body", e.exception.error_message)
 
         assert_error_without_key("player_id")

@@ -95,7 +95,7 @@ class DaoImpl(Dao):
             self.execute("insert into matches (id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores) values (%s, %s, %s, %s, %s, %s, %s, %s)",
                          match.match_id, match.user_id, match.date, match.team1_player1.player_id, match.team1_player2.player_id if match.team1_player2 is not None else None, match.team2_player1.player_id, match.team2_player2.player_id if match.team2_player2 is not None else None, match.scores_db_str())
             if len(match.stats) > 0:
-                stats_params = [[match.user_id, stat.match_id, stat.player_id, stat.game_index, stat.shot_result, stat.shot_type, stat.shot_side] for stat in match.stats]
+                stats_params = [[match.user_id, match.match_id, stat.player_id, stat.game_index, stat.shot_result, stat.shot_type, stat.shot_side] for stat in match.stats]
                 self.execute_many("insert into stats (user_id, match_id, player_id, game_index, shot_result, shot_type, shot_side) values (%s, %s, %s, %s, %s, %s, %s)", *stats_params)
             self.conn.commit()
         except ServiceException as e:

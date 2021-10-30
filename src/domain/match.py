@@ -40,9 +40,10 @@ class Stat(DomainBase):
     shot_side: Optional[str]
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any], match_id: str):
+    def from_dict(cls, d: Dict[str, Any]):
         try:
-            return Stat(match_id, d["player_id"], d["game_index"], d["shot_result"], d["shot_type"], d.get("shot_side"))
+            # Match ID isn't required in the request body. It will be filled in when being inserted
+            return Stat(d.get("match_id"), d["player_id"], d["game_index"], d["shot_result"], d["shot_type"], d.get("shot_side"))
         except KeyError as e:
             raise DomainException(f"Missing required key '{e.args[0]}' in request body")
 
@@ -76,7 +77,7 @@ class Match(DomainBase):
             scores = [GameScore.from_dict(score) for score in d["scores"]]
             if len(scores) == 0:
                 raise DomainException("No scores in the request body. A match must consist of at least one game")
-            stats = [Stat.from_dict(stat, match_id) for stat in d.get("stats", [])]
+            stats = [Stat.from_dict(stat) for stat in d.get("stats", [])]
 
             return Match(
                 match_id=match_id,

@@ -167,7 +167,6 @@ class Test(unittest.TestCase):
         self.assertEqual(1, score.team2_score)
         self.assertEqual(2, len(match.stats))
         stat = match.stats[0]
-        self.assertEqual("match1", stat.match_id)
         self.assertEqual("player1", stat.player_id)
         self.assertEqual(0, stat.game_index)
         self.assertEqual("WINNER", stat.shot_result)
@@ -207,7 +206,7 @@ class Test(unittest.TestCase):
             scores=[GameScore(10, 4), GameScore(2, 0)],
             stats=[
                 Stat(
-                    match_id="0",
+                    match_id="",
                     player_id=p1.player_id,
                     game_index=0,
                     shot_result="ERROR",
@@ -215,7 +214,7 @@ class Test(unittest.TestCase):
                     shot_side="BACKHAND"
                 ),
                 Stat(
-                    match_id="0",
+                    match_id="",
                     player_id=p2.player_id,
                     game_index=1,
                     shot_result="WINNER",
@@ -294,7 +293,7 @@ class Test(unittest.TestCase):
                 scores=[GameScore(10, 4), GameScore(2, 0)],
                 stats=[
                     Stat(
-                        match_id="0",
+                        match_id="",
                         player_id=p1.player_id,
                         game_index=0,
                         shot_result="ERROR",
@@ -302,7 +301,7 @@ class Test(unittest.TestCase):
                         shot_side="BACKHAND"
                     ),
                     Stat(
-                        match_id="0",
+                        match_id="",
                         player_id="bad player",
                         game_index=1,
                         shot_result="WINNER",
