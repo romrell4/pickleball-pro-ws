@@ -86,7 +86,7 @@ class DaoImpl(Dao):
         self.execute("delete from players where id = %s", player_id)
 
     def get_matches(self, user_id: str) -> List[Match]:
-        match_dtos = self.get_list(MatchDbDto, "select id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores from matches where user_id = %s", user_id)
+        match_dtos = self.get_list(MatchDbDto, "select id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores from matches where user_id = %s order by date desc", user_id)
         return self.to_matches(match_dtos)
 
     def create_match(self, match: Match) -> Match:

@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
             """)
             self.dao.execute("""insert into matches (id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores) values 
                 ('match1', 'TEST1', '2020-01-01 00:00:01', 'player1', null, 'player2', null, '10-1'),
-                ('match2', 'TEST1', '2020-01-01 00:00:01', 'player1', 'player2', 'player3', 'player4', '10-1,2-10')
+                ('match2', 'TEST1', '2020-01-01 00:00:02', 'player1', 'player2', 'player3', 'player4', '10-1,2-10')
             """)
             self.dao.execute("""insert into stats (id, user_id, match_id, player_id, game_index, shot_result, shot_type, shot_side) values 
                 ('stat1', 'TEST1', 'match1', 'player1', 0, 'WINNER', 'DROP', 'FOREHAND'),
@@ -153,7 +153,22 @@ class Test(unittest.TestCase):
     def test_get_matches(self):
         matches = self.dao.get_matches("TEST1")
         self.assertEqual(2, len(matches))
-        match = [m for m in matches if m.match_id == "match1"][0]
+
+        match = matches[0]
+        self.assertEqual("player1", match.team1_player1.player_id)
+        self.assertEqual("player2", match.team1_player2.player_id)
+        self.assertEqual("player3", match.team2_player1.player_id)
+        self.assertEqual("player4", match.team2_player2.player_id)
+        self.assertEqual(2, len(match.scores))
+        score = match.scores[0]
+        self.assertEqual(10, score.team1_score)
+        self.assertEqual(1, score.team2_score)
+        score = match.scores[1]
+        self.assertEqual(2, score.team1_score)
+        self.assertEqual(10, score.team2_score)
+        self.assertEqual(0, len(match.stats))
+
+        match = matches[1]
         self.assertEqual("match1", match.match_id)
         self.assertEqual("TEST1", match.user_id)
         self.assertEqual(datetime(2020, 1, 1, 0, 0, 1), match.date)
@@ -174,20 +189,6 @@ class Test(unittest.TestCase):
         self.assertEqual("FOREHAND", stat.shot_side)
         stat = match.stats[1]
         self.assertIsNone(stat.shot_side)
-
-        match = [m for m in matches if m.match_id == "match2"][0]
-        self.assertEqual("player1", match.team1_player1.player_id)
-        self.assertEqual("player2", match.team1_player2.player_id)
-        self.assertEqual("player3", match.team2_player1.player_id)
-        self.assertEqual("player4", match.team2_player2.player_id)
-        self.assertEqual(2, len(match.scores))
-        score = match.scores[0]
-        self.assertEqual(10, score.team1_score)
-        self.assertEqual(1, score.team2_score)
-        score = match.scores[1]
-        self.assertEqual(2, score.team1_score)
-        self.assertEqual(10, score.team2_score)
-        self.assertEqual(0, len(match.stats))
 
     def test_create_match(self):
         p1, p2, p3, p4 = fixtures.player(), fixtures.player(), fixtures.player(), fixtures.player()
