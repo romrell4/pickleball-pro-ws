@@ -151,6 +151,30 @@ class Test(unittest.TestCase):
 
         create_match_mock.assert_called_once_with(fixtures.match())
 
+    def test_delete_match(self):
+        self.assert_requires_auth(lambda: self.manager.delete_match(""))
+
+        with patch.object(self.manager.dao, "get_match", return_value=None) as get_match_mock:
+            with self.assertRaises(ServiceException) as e:
+                self.manager.delete_match("")
+            self.assertEqual(404, e.exception.status_code)
+            get_match_mock.assert_called_once_with("")
+
+        not_your_match = fixtures.match()
+        not_your_match.user_id = "not you"
+        with patch.object(self.manager.dao, "get_match", return_value=not_your_match):
+            with self.assertRaises(ServiceException) as e:
+                self.manager.delete_match("")
+            self.assertEqual(403, e.exception.status_code)
+
+        your_match = fixtures.match()
+        your_match.user_id = self.manager.user.user_id
+        with patch.object(self.manager.dao, "get_match", return_value=your_match):
+            with patch.object(self.manager.dao, "delete_match") as delete_match_mock:
+                result = self.manager.delete_match("")
+                self.assertEqual({}, result)
+            delete_match_mock.assert_called_once_with("")
+
     def assert_requires_auth(self, fun: Callable):
         self.manager.user = None
         with self.assertRaises(ServiceException) as e:

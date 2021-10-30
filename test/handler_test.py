@@ -75,6 +75,13 @@ class Test(unittest.TestCase):
             from_dict_mock.assert_called_once_with({}, self.handler.manager.user)
         create_match_mock.assert_called_once_with(fixtures.match())
 
+    def test_delete_match(self):
+        with patch.object(self.handler.manager, "delete_match", return_value={}) as delete_match_mock:
+            response = self.handler.handle(create_event("/matches/{id}", method="DELETE", path_params={"id": "ID"}))
+            self.assertEqual(200, response["statusCode"])
+            self.assertEqual({}, json.loads(response["body"]))
+        delete_match_mock.assert_called_once_with("ID")
+
     def assert_player_json(self, expected_player: Player, json_player: Dict):
         self.assertEqual(expected_player.player_id, json_player["player_id"])
         self.assertEqual(expected_player.owner_user_id, json_player["owner_user_id"])

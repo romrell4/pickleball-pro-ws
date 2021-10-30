@@ -23,7 +23,7 @@ class Dao:
 
     def get_players(self, owner_user_id: str) -> List[Player]: pass
 
-    def get_player(self, player_id: str) -> Player: pass
+    def get_player(self, player_id: str) -> Optional[Player]: pass
 
     def create_player(self, player: Player) -> Player: pass
 
@@ -33,7 +33,11 @@ class Dao:
 
     def get_matches(self, user_id: str) -> List[Match]: pass
 
+    def get_match(self, match_id: str) -> Optional[Match]: pass
+
     def create_match(self, match: Match) -> Match: pass
+
+    def delete_match(self, match_id: str): pass
 
 
 class DaoImpl(Dao):
@@ -89,6 +93,10 @@ class DaoImpl(Dao):
         match_dtos = self.get_list(MatchDbDto, "select id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores from matches where user_id = %s order by date desc", user_id)
         return self.to_matches(match_dtos)
 
+    def get_match(self, match_id: str) -> Optional[Match]:
+        match_dto = self.get_one(MatchDbDto, "select id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores from matches where id = %s", match_id)
+        return self.to_matches([match_dto])[0] if match_dto is not None else None
+
     def create_match(self, match: Match) -> Match:
         self.conn.autocommit(False)
         try:
@@ -105,11 +113,10 @@ class DaoImpl(Dao):
             self.conn.autocommit(True)
         return self.get_match(match.match_id)
 
-    # Private functions
+    def delete_match(self, match_id: str):
+        self.execute("delete from matches where id = %s", match_id)
 
-    def get_match(self, match_id: str) -> Optional[Match]:
-        match_dto = self.get_one(MatchDbDto, "select id, user_id, date, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id, scores from matches where id = %s", match_id)
-        return self.to_matches([match_dto])[0] if match_dto is not None else None
+    # Private functions
 
     def get_stats(self, user_id: str) -> List[Stat]:
         return self.get_list(Stat, "select match_id, player_id, game_index, shot_result, shot_type, shot_side from stats where user_id = %s order by match_id, id", user_id)

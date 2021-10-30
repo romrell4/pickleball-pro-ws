@@ -94,7 +94,7 @@ class ManagerImpl(Manager):
 
         player = self.dao.get_player(player_id)
         if player is None:
-            raise ServiceException("Player not found", 404)
+            raise ServiceException("Player not found.", 404)
         elif player.owner_user_id != self.user.user_id:
             raise ServiceException("You cannot delete a player you don't own.", 403)
         elif player.is_owner:
@@ -112,6 +112,18 @@ class ManagerImpl(Manager):
         self.require_auth()
 
         return self.dao.create_match(match)
+
+    def delete_match(self, match_id: str) -> Dict:
+        self.require_auth()
+
+        match = self.dao.get_match(match_id)
+        if match is None:
+            raise ServiceException("Match not found.", 404)
+        elif match.user_id != self.user.user_id:
+            raise ServiceException("You cannot delete another player's matches.", 403)
+
+        self.dao.delete_match(match_id)
+        return {}
 
     def require_auth(self):
         if self.user is None:

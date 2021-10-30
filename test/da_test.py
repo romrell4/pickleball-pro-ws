@@ -312,3 +312,7 @@ class Test(unittest.TestCase):
                 ]
             ))
         self.assertIsNone(self.dao.get_match("-2"))
+
+    def test_delete_match(self):
+        self.dao.delete_match("match1")
+        self.assertIsNone(self.dao.get_match("match1"))
