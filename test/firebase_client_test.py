@@ -12,7 +12,11 @@ class Test(unittest.TestCase):
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "../src/firebase_creds.json"
         cls.client = FirebaseClientImpl()
 
-    def test_validate_token(self):
+    def test_firebase_creds_exist(self):
+        self.assertTrue(os.path.exists("../src/firebase_creds.json"))
+
+    # This test will not run as part of the suite. To run this test, place correct tokens in the properties file and remove the "_" prefix
+    def _test_validate_token(self):
         # Test empty token
         self.assertRaises(ValueError, lambda: self.client.get_firebase_user(""))
 
